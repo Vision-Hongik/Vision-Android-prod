@@ -239,8 +239,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             final Vector<String> lines = new Vector<String>();
 
+            if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
+              lines.add(service.getSource_Station() + " Map Data");
+              lines.add("");
+              for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
+                lines.add("Sector"+ i+" Name: " + service.getSectorArrayList().get(i).getName());
+                lines.add("Sector"+ i+" GPS: " + service.getSectorArrayList().get(i).getGPS());
+              }
+            }
             lines.add("");
-
             lines.add("Latitude: " + service.getLatitude());
             lines.add("Longitude: " + service.getLongitude());
             lines.add("Src Station: " + service.getSource_Station());
@@ -437,7 +444,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //--Function----------------------------------------------------------------------------------------------------------------------------------------
 
   // 서비스에 필요한 변수들을 초기화한 후, 안내 시작 함수!
-  public void initService_And_StartNavigate(){
+  public void initService(final MyCallback myCallback){
 
     final RecognitionListener sourceStationVoiceListener;
     final RecognitionListener destStationVoiceListener;
@@ -528,7 +535,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           Thread.sleep(2000);
           if(answer.charAt(0) != '네' && answer.charAt(0) != '내'){
             // 출발지, 도착지가 제대로 체크되지 않았다면, 함수 다시 시작!
-            initService_And_StartNavigate();
+            voice.TTS("다시 버튼을 눌러주세요.");
           }
           else{
             //제대로 체크됬다면 확정짓고 출발역의 맵데이터를 가져온다.
@@ -540,7 +547,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             getMapData_To_Service_From_Server("sangsu", new MyCallback() {
               @Override
               public void callback() {
-                navigate();
+                myCallback.callback();
               }
             });
 
@@ -911,7 +918,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
 
     else if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ){
-      initService_And_StartNavigate();
+      initService(new MyCallback() {
+        @Override
+        public void callback() {
+          navigate();
+        }
+      });
       return true;
     }
     return super.onKeyDown(keyCode, event);
