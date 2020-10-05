@@ -137,6 +137,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Matrix cropToFrameTransform;
 
   private MultiBoxTracker tracker;
+  private OverlayView trackingOverlay;
 
   private byte[] luminanceCopy;
 
@@ -223,7 +224,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           public void drawCallback(final Canvas canvas) {
             tracker.draw(canvas);
             if (isDebug()) {
-              tracker.drawDebug(canvas);
+              //tracker.drawDebug(canvas);
             }
           }
         });
@@ -235,44 +236,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             if (!isDebug()) {
               return;
             }
-            final Bitmap copy = cropCopyBitmap;
-            if (copy == null) {
-              return;
-            }
-
-            final int backgroundColor = Color.argb(100, 0, 0, 0);
-            canvas.drawColor(backgroundColor);
-
-            final Matrix matrix = new Matrix();
-            final float scaleFactor = 2;
-            matrix.postScale(scaleFactor, scaleFactor);
-            matrix.postTranslate(
-                canvas.getWidth() - copy.getWidth() * scaleFactor,
-                canvas.getHeight() - copy.getHeight() * scaleFactor);
-            canvas.drawBitmap(copy, matrix, new Paint());
 
             final Vector<String> lines = new Vector<String>();
-            if (detector != null) {
-              final String statString = detector.getStatString();
-              final String[] statLines = statString.split("\n");
-              for (final String line : statLines) {
-                lines.add(line);
-              }
-            }
+
             lines.add("");
 
-            lines.add("Frame: " + previewWidth + "x" + previewHeight);
-            lines.add("Crop: " + copy.getWidth() + "x" + copy.getHeight());
-            lines.add("View: " + canvas.getWidth() + "x" + canvas.getHeight());
-            lines.add("Rotation: " + sensorOrientation);
-            lines.add("Inference time: " + lastProcessingTimeMs + "ms");
+            lines.add("Latitude: " + service.getLatitude());
+            lines.add("Longitude: " + service.getLongitude());
+            lines.add("Src Station: " + service.getSource_Station());
+            lines.add("Dst Station: " + service.getDest_Station());
 
-            borderedText.drawLines(canvas, 10, canvas.getHeight() - 10, lines);
+            borderedText.drawLines(canvas, 10, canvas.getHeight() - 100, lines);
           }
         });
   }
 
-  OverlayView trackingOverlay;
 
   @Override
   protected void processImage() {
