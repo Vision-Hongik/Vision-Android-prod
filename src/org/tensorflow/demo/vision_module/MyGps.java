@@ -57,6 +57,8 @@ public class MyGps {
                     10,
                     0,
                     gpsLocationListener);
+
+
             return flag;
         }
         return false;
