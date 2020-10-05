@@ -27,44 +27,44 @@ buildscript {
     }
 }
 
-import de.undercouch.gradle.tasks.download.Download
-task downloadFile(type: Download){
-    for (f in models) {
-        src "${MODEL_URL}/" + f
-    }
-    dest new File(project.ext.TMP_DIR)
-    overwrite true
-}
-
-task extractModels(type: Copy) {
-    for (f in models) {
-        def localFile = f.split("/")[-1]
-        from zipTree(project.ext.TMP_DIR + '/' + localFile)
-    }
-
-    into file(project.ext.ASSET_DIR)
-    fileMode  0644
-    exclude '**/LICENSE'
-
-    def needDownload = false
-    for (f in models) {
-        def localFile = f.split("/")[-1]
-        if (!(new File(project.ext.TMP_DIR + '/' + localFile)).exists()) {
-            needDownload = true
-        }
-    }
-
-    if (needDownload) {
-        dependsOn downloadFile
-    }
-}
-
-tasks.whenTaskAdded { task ->
-    if (task.name == 'assembleDebug') {
-        task.dependsOn 'extractModels'
-    }
-    if (task.name == 'assembleRelease') {
-        task.dependsOn 'extractModels'
-    }
-}
+//import de.undercouch.gradle.tasks.download.Download
+//task downloadFile(type: Download){
+//    for (f in models) {
+//        src "${MODEL_URL}/" + f
+//    }
+//    dest new File(project.ext.TMP_DIR)
+//    overwrite true
+//}
+//
+//task extractModels(type: Copy) {
+//    for (f in models) {
+//        def localFile = f.split("/")[-1]
+//        from zipTree(project.ext.TMP_DIR + '/' + localFile)
+//    }
+//
+//    into file(project.ext.ASSET_DIR)
+//    fileMode  0644
+//    exclude '**/LICENSE'
+//
+//    def needDownload = false
+//    for (f in models) {
+//        def localFile = f.split("/")[-1]
+//        if (!(new File(project.ext.TMP_DIR + '/' + localFile)).exists()) {
+//            needDownload = true
+//        }
+//    }
+//
+//    if (needDownload) {
+//        dependsOn downloadFile
+//    }
+//}
+//
+//tasks.whenTaskAdded { task ->
+//    if (task.name == 'assembleDebug') {
+//        task.dependsOn 'extractModels'
+//    }
+//    if (task.name == 'assembleRelease') {
+//        task.dependsOn 'extractModels'
+//    }
+//}
 

@@ -381,7 +381,8 @@ public abstract class CameraActivity extends Activity
               },
               this,
               getLayoutId(),
-              getDesiredPreviewFrameSize());
+              getDesiredPreviewFrameSize(),
+                  this);
 
       camera2Fragment.setCamera(cameraId);
       fragment = camera2Fragment;
