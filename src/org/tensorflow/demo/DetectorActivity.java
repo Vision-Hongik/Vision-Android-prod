@@ -39,6 +39,7 @@ import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -147,6 +148,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Service service;
   private Voice voice;
 
+  private boolean yoloFirstStartFlag = false;
+
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -172,7 +175,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // Service
     service = new Service();
 
-    
   }
 
   @Override
@@ -314,6 +316,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           @TargetApi(Build.VERSION_CODES.N)
           @Override
           public void run() {
+            if(!DetectorActivity.this.yoloFirstStartFlag){
+              DetectorActivity.this.yoloFirstStartFlag = true;
+              voice.TTS("로딩 완료 시작 가능합니다.");
+            }
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
@@ -852,18 +858,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   // OcrString을 얻어서 TTS
-  public void getOcrString_AND_TTS(Bitmap bitmap){
+  public void getOcrString_AND_TTS(Bitmap bitmap,final MyCallback myCallback){
     Log.e("t", "POST : /ocr");
 
     Response.Listener<JSONObject> ocrListener = new Response.Listener<JSONObject>() {
       @Override
       public void onResponse(JSONObject response) {
         Log.e("h", "Response: " + response.toString());
-        try {
-          voice.TTS(response.getString("text"));
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
+        myCallback.callback();
       }
     };
     OcrRequest ocrRequest = new OcrRequest(bitmap,ocrListener);
@@ -918,6 +920,25 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       }
     });
   }//turn_on_gps end
+
+
+  @Override
+  public boolean onKeyDown(final int keyCode, final KeyEvent event) {
+    if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP
+            || keyCode == KeyEvent.KEYCODE_BUTTON_L1 || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+      this.debug = !this.debug;
+      requestRender();
+      onSetDebug(debug);
+      return true;
+    }
+
+    else if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ){
+      initService_And_StartNavigate();
+      return true;
+    }
+    return super.onKeyDown(keyCode, event);
+  }
+
 
   @Override
   public void onStart() {
