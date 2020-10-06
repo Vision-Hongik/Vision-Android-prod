@@ -240,16 +240,33 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             final Vector<String> lines = new Vector<String>();
 
             if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
-              lines.add(service.getSource_Station() + " Map Data");
+              lines.add(service.getSource_Station() + " Receive Map Data!");
               lines.add("");
               for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
-                lines.add("Sector"+ i+" Name: " + service.getSectorArrayList().get(i).getName());
-                lines.add("Sector"+ i+" GPS: " + service.getSectorArrayList().get(i).getGPS());
+                lines.add("Sector" + i);
+                lines.add(" Name: " + service.getSectorArrayList().get(i).getName());
+                lines.add(" GPS: " + service.getSectorArrayList().get(i).getGPS());
+                lines.add("");
               }
             }
             lines.add("");
-            lines.add("Latitude: " + service.getLatitude());
-            lines.add("Longitude: " + service.getLongitude());
+            lines.add("Instance Buffer");
+            lines.add("");
+            for(int i=0; i<4; i++){
+              Set keySet = DetectorActivity.this.instanceBuffer.get(i).keySet();
+              Iterator iterKey = keySet.iterator();
+              String tmp = (i+1) +"사분면: ";
+              while(iterKey.hasNext()){
+                int nKey = (int) iterKey.next();
+                tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(i).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(i).get(nKey).getCount()+")";
+              }
+              lines.add(tmp);
+            }
+            lines.add("");
+            lines.add("GPS");
+            lines.add(" Latitude: " + service.getLatitude());
+            lines.add(" Longitude: " + service.getLongitude());
+            lines.add("");
             lines.add("Src Station: " + service.getSource_Station());
             lines.add("Dst Station: " + service.getDest_Station());
 
@@ -308,7 +325,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
-            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+            DetectorActivity.this.lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             bitmapWidth = croppedBitmap.getWidth() - 1;
             bitmapHeight = croppedBitmap.getWidth() - 1;
 
@@ -363,10 +380,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
 
 //          시간측정
-            lastProcessingTimeMs1 += SystemClock.uptimeMillis() - startTime;
+            DetectorActivity.this.lastProcessingTimeMs1 += SystemClock.uptimeMillis() - startTime;
             Log.e("Time", "=========================Time? : " + lastProcessingTimeMs1);
             // 2초 지날때마다 갱신
-            if(lastProcessingTimeMs1 >= BUFFERTIME * 1000){
+            if(DetectorActivity.this.lastProcessingTimeMs1 >= BUFFERTIME * 1000){
               for(int i=0; i<4; i++){
                 Set keySet = instanceBuffer.get(i).keySet();
                 Iterator iterKey = keySet.iterator();
@@ -378,7 +395,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               // board 짤라서 -> OCR 보내기
 
               // 초기화
-              lastProcessingTimeMs1 = 0;
+              DetectorActivity.this.lastProcessingTimeMs1 = 0;
               for(int i=0; i<4; i++) {
                 instanceBuffer.get(i).clear();
               }
