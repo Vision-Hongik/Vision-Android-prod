@@ -24,8 +24,8 @@ public class MyGps {
     //private AppCompatActivity act;
     public MyGps(Activity activity, LocationListener locationListener) {
         this.activity = activity;
-        lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
-        gpsLocationListener = locationListener;
+        this.lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+        this.gpsLocationListener = locationListener;
     }
 
     @SuppressLint("MissingPermission")
@@ -38,7 +38,8 @@ public class MyGps {
                     0);
         }
         else {
-            @SuppressLint("MissingPermission") Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            @SuppressLint("MissingPermission")
+            Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             boolean flag = true;
             if (location == null)
             {
@@ -52,12 +53,15 @@ public class MyGps {
                 Log.e("t", "startGps:" + location.getLatitude());
                 Log.e("t", "정확" + location.getAccuracy());
             }
-
-            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                    10,
-                    0,
-                    gpsLocationListener);
-
+            if(gpsLocationListener == null){
+                Log.e("t", "lm null이다");
+            }
+            else {
+                lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                        500,
+                        0,
+                        gpsLocationListener);
+            }
 
             return flag;
         }

@@ -33,6 +33,9 @@ import android.location.LocationListener;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
@@ -163,9 +166,16 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     turn_on_GPS_dialog();
 
 
-    // Gps
+    //Gps
     myGps = new MyGps(DetectorActivity.this,locationListener);
-    myGps.startGps();
+    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        myGps.startGps();
+        Log.e("thread", "run: start");
+      }
+    },0);
+
 
     // Voice
     voice = new Voice(this,null);
@@ -249,6 +259,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 lines.add("");
               }
             }
+
             lines.add("");
             lines.add("Instance Buffer");
             lines.add("");
@@ -448,7 +459,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     @Override
     public void onProviderEnabled(String provider) {
       Log.e("t", "startGps: 사용가능");
-      myGps.startGps();
+      //myGps.startGps();
     }
     @Override
     public void onProviderDisabled(String provider) {
