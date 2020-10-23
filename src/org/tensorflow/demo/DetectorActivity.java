@@ -48,6 +48,7 @@ import android.view.KeyEvent;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GestureDetectorCompat;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -366,6 +367,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             final List<Classifier.Recognition> mappedRecognitions =
                 new LinkedList<Classifier.Recognition>();
+
+
+            // 일단은 그냥 아무거나 cropSignBitmap에 넣어보자
+            // 제일 처음 뜬 instance crop!!
+            if(results.size() > 0) {
+              RectF cslocation = results.get(0).getLocation();
+              DetectorActivity.this.cropSignBitmap = cropBitmap(croppedBitmap,cslocation);
+            }
 
             for (final Classifier.Recognition result : results) {
               //Log.e("result", "=========================offset? : " + result.toString());
@@ -905,7 +914,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     };
   }
 
-
+  Bitmap cropBitmap(Bitmap bitmap,RectF location){
+    return Bitmap.createBitmap(bitmap,(int)location.left,(int)location.top,(int)(location.right-location.left),(int)(location.bottom-location.top));
+  }
 
   RecognitionListener getRecognitionListener(final MyCallback myCallback){
 
@@ -972,8 +983,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     else if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ){
 
       //비트맵 처리 한번 해보기!
-      Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.ocrtest);
-      getOcrString(bitmap, new Response.Listener<JSONObject>() {
+      Bitmap bitmap;
+      if(cropSignBitmap == null)
+        bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.ocrtest);
+      else
+        bitmap = cropSignBitmap;
+
+        getOcrString(bitmap, new Response.Listener<JSONObject>() {
         @Override
         public void onResponse(JSONObject response) {
           Log.e("h", "OCR Response: " + response.toString());
