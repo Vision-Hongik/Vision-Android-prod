@@ -21,6 +21,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -129,6 +130,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
+  private Bitmap cropSignBitmap = null;
   private float bitmapWidth;
   private float bitmapHeight;
   ArrayList< Hashtable<Integer, Classifier.Recognition>> instanceBuffer = new ArrayList<Hashtable<Integer, Classifier.Recognition>>();
@@ -829,6 +831,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     voice.STT();
   }
 
+
   public void navigate(){
     Log.e("n", "Navigate 시작" );
     voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
@@ -884,18 +887,114 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 
   // OcrString을 얻어서 TTS
-  public void getOcrString_AND_TTS(Bitmap bitmap,final MyCallback myCallback){
+  public void getOcrString(Bitmap bitmap,final Response.Listener<JSONObject> ocrListener){
     Log.e("t", "POST : /ocr");
 
-    Response.Listener<JSONObject> ocrListener = new Response.Listener<JSONObject>() {
-      @Override
-      public void onResponse(JSONObject response) {
-        Log.e("h", "Response: " + response.toString());
-        myCallback.callback();
-      }
-    };
     OcrRequest ocrRequest = new OcrRequest(bitmap,ocrListener);
     this.requestQueue.add(ocrRequest);
+  }
+
+
+
+  private Compass.CompassListener getCompassListener() {
+    return new Compass.CompassListener() {
+      @Override
+      public void onNewAzimuth(final float azimuth) {
+          DetectorActivity.this.service.setAzimuth(azimuth);
+      }
+    };
+  }
+
+
+
+  RecognitionListener getRecognitionListener(final MyCallback myCallback){
+
+    RecognitionListener recognitionListener = new RecognitionListener() {
+      @Override
+      public void onReadyForSpeech(Bundle bundle) {
+
+      }
+
+      @Override
+      public void onBeginningOfSpeech() {
+
+      }
+
+      @Override
+      public void onRmsChanged(float v) {
+
+      }
+
+      @Override
+      public void onBufferReceived(byte[] bytes) {
+
+      }
+
+      @Override
+      public void onEndOfSpeech() {
+
+      }
+
+      @Override
+      public void onError(int i) {
+
+      }
+
+      @Override
+      public void onResults(Bundle bundle) {
+        myCallback.callback();
+      }
+
+      @Override
+      public void onPartialResults(Bundle bundle) {
+
+      }
+
+      @Override
+      public void onEvent(int i, Bundle bundle) {
+
+      }
+    };
+    return recognitionListener;
+  }
+
+
+  @Override
+  public boolean onKeyDown(final int keyCode, final KeyEvent event) {
+    if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP
+            || keyCode == KeyEvent.KEYCODE_BUTTON_L1 || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+      this.debug = !this.debug;
+      requestRender();
+      onSetDebug(debug);
+      return true;
+    }
+
+    else if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ){
+
+      //비트맵 처리 한번 해보기!
+      Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.ocrtest);
+      getOcrString(bitmap, new Response.Listener<JSONObject>() {
+        @Override
+        public void onResponse(JSONObject response) {
+          Log.e("h", "OCR Response: " + response.toString());
+          try {
+            voice.TTS(response.getString("text"));
+          } catch (JSONException e) {
+            e.printStackTrace();
+          }
+        }
+      });
+
+      //서비스를 위한 초기화 작업 시작
+//      initService(new MyCallback() {
+//        @Override
+//        public void callback() {
+//          navigate();
+//        }
+//      });
+      return true;
+    }
+    return super.onKeyDown(keyCode, event);
   }
 
 
@@ -948,45 +1047,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     });
   }//turn_on_gps end
 
-
-  private Compass.CompassListener getCompassListener() {
-    return new Compass.CompassListener() {
-      @Override
-      public void onNewAzimuth(final float azimuth) {
-        // UI updates only in UI thread
-        // https://stackoverflow.com/q/11140285/444966
-//        runOnUiThread(new Runnable() {
-//          @Override
-//          public void run() {
-//          }
-//        });
-          DetectorActivity.this.service.setAzimuth(azimuth);
-      }
-    };
-  }
-
-
-  @Override
-  public boolean onKeyDown(final int keyCode, final KeyEvent event) {
-    if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP
-            || keyCode == KeyEvent.KEYCODE_BUTTON_L1 || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-      this.debug = !this.debug;
-      requestRender();
-      onSetDebug(debug);
-      return true;
-    }
-
-    else if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ){
-      initService(new MyCallback() {
-        @Override
-        public void callback() {
-          navigate();
-        }
-      });
-      return true;
-    }
-    return super.onKeyDown(keyCode, event);
-  }
 
 
   @Override
