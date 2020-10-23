@@ -68,10 +68,12 @@ import org.tensorflow.demo.env.BorderedText;
 import org.tensorflow.demo.env.ImageUtils;
 import org.tensorflow.demo.env.Logger;
 import org.tensorflow.demo.tracking.MultiBoxTracker;
+import org.tensorflow.demo.vision_module.Compass;
 import org.tensorflow.demo.vision_module.MyCallback;
 import org.tensorflow.demo.vision_module.MapRequest;
 import org.tensorflow.demo.vision_module.MyGps;
 import org.tensorflow.demo.vision_module.OcrRequest;
+import org.tensorflow.demo.vision_module.SOTWFormatter;
 import org.tensorflow.demo.vision_module.Sector;
 import org.tensorflow.demo.vision_module.Service;
 import org.tensorflow.demo.vision_module.Voice;
@@ -151,6 +153,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private MyGps myGps;
   private Service service;
   private Voice voice;
+  private Compass compass;
+  private SOTWFormatter sotwFormatter;
+
 
   private boolean yoloFirstStartFlag = false;
 
@@ -176,6 +181,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       }
     },0);
 
+    //Compass
+    compass = new Compass(this);
+    sotwFormatter = new SOTWFormatter(this); // 방향 포맷,,방위각 보고 N,NW ..써주는 친구..
+    Compass.CompassListener cl = getCompassListener();
+    compass.setListener(cl);
 
     // Voice
     voice = new Voice(this,null);
@@ -273,6 +283,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               }
               lines.add(tmp);
             }
+            lines.add("");
+            lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
             lines.add("");
             lines.add("GPS");
             lines.add(" Latitude: " + service.getLatitude());
@@ -870,6 +882,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     this.requestQueue.add(jsonRequest);
   }
 
+
   // OcrString을 얻어서 TTS
   public void getOcrString_AND_TTS(Bitmap bitmap,final MyCallback myCallback){
     Log.e("t", "POST : /ocr");
@@ -884,6 +897,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     OcrRequest ocrRequest = new OcrRequest(bitmap,ocrListener);
     this.requestQueue.add(ocrRequest);
   }
+
 
   // GPS 꺼져있을 경우 alert dialog
   protected void createLocationRequest()
@@ -935,6 +949,23 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }//turn_on_gps end
 
 
+  private Compass.CompassListener getCompassListener() {
+    return new Compass.CompassListener() {
+      @Override
+      public void onNewAzimuth(final float azimuth) {
+        // UI updates only in UI thread
+        // https://stackoverflow.com/q/11140285/444966
+//        runOnUiThread(new Runnable() {
+//          @Override
+//          public void run() {
+//          }
+//        });
+          DetectorActivity.this.service.setAzimuth(azimuth);
+      }
+    };
+  }
+
+
   @Override
   public boolean onKeyDown(final int keyCode, final KeyEvent event) {
     if ( keyCode == KeyEvent.KEYCODE_VOLUME_UP
@@ -966,6 +997,27 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       ActivityCompat.requestPermissions(DetectorActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
               0);
     }
+    Log.d("compass", "start compass");
+    compass.start();
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+    compass.stop();
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    compass.start();
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    Log.d("compass", "stop compass");
+    compass.stop();
   }
 
   @Override

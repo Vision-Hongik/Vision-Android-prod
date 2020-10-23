@@ -10,6 +10,7 @@ public class Service {
     private String source_Exit;
     private String dest_Station;
     private String dest_Exit;
+    private float azimuth;
 
     //private jsonObject Array
     private ArrayList<Sector> sectorArrayList;
@@ -71,6 +72,8 @@ public class Service {
 
     public void setDest_Exit(String dest_Exit){ this.dest_Exit= dest_Exit; }
 
+    public void setAzimuth(float azimuth) {this.azimuth = azimuth;}
+
     public double getLongitude(){
         return this.longitude;
     }
@@ -86,6 +89,8 @@ public class Service {
     public String getDest_Station() {return this.dest_Station;}
 
     public String getDest_Exit() {return this.dest_Exit;}
+
+    public float getAzimuth() { return this.azimuth;}
 
     public void setSectorArrayList(ArrayList<Sector> mapList){
         this.sectorArrayList = mapList;

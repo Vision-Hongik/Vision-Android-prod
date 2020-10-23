@@ -17,4 +17,16 @@
     <string name="description_info">Info</string>
     <string name="request_permission">This sample needs camera permission.</string>
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+
+    <string name="compass_dial" translatable="false">Compass Dial</string>
+    <string name="compass_hands" translatable="false">Compass Hands</string>
+
+    <string name="sotw_north">N</string>
+    <string name="sotw_east">E</string>
+    <string name="sotw_south">S</string>
+    <string name="sotw_west">W</string>
+    <string name="sotw_northeast">NE</string>
+    <string name="sotw_northwest">NW</string>
+    <string name="sotw_southeast">SE</string>
+    <string name="sotw_southwest">SW</string>
 </resources>
