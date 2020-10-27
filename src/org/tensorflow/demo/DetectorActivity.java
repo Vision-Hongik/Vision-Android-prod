@@ -983,31 +983,31 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     else if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ){
 
       //비트맵 처리 한번 해보기!
-      Bitmap bitmap;
-      if(cropSignBitmap == null)
-        bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.ocrtest);
-      else
-        bitmap = cropSignBitmap;
-
-        getOcrString(bitmap, new Response.Listener<JSONObject>() {
-        @Override
-        public void onResponse(JSONObject response) {
-          Log.e("h", "OCR Response: " + response.toString());
-          try {
-            voice.TTS(response.getString("text"));
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
-        }
-      });
-
-      //서비스를 위한 초기화 작업 시작
-//      initService(new MyCallback() {
+//      Bitmap bitmap;
+//      if(cropSignBitmap == null)
+//        bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.ocrtest);
+//      else
+//        bitmap = cropSignBitmap;
+//
+//        getOcrString(bitmap, new Response.Listener<JSONObject>() {
 //        @Override
-//        public void callback() {
-//          navigate();
+//        public void onResponse(JSONObject response) {
+//          Log.e("h", "OCR Response: " + response.toString());
+//          try {
+//            voice.TTS(response.getString("text"));
+//          } catch (JSONException e) {
+//            e.printStackTrace();
+//          }
 //        }
 //      });
+
+      //서비스를 위한 초기화 작업 시작
+      initService(new MyCallback() {
+        @Override
+        public void callback() {
+          navigate();
+        }
+      });
       return true;
     }
     return super.onKeyDown(keyCode, event);
