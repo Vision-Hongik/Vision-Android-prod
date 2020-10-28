@@ -128,6 +128,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   private long lastProcessingTimeMs;
   private long lastProcessingTimeMs1;
+  private long lastDetectStartTime = 0;
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
@@ -135,7 +136,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private float bitmapWidth;
   private float bitmapHeight;
   ArrayList< Hashtable<Integer, Classifier.Recognition>> instanceBuffer = new ArrayList<Hashtable<Integer, Classifier.Recognition>>();
-  private static final int BUFFERTIME = 2;
+  private static final int BUFFERTIME = 3;
 
   private boolean computingDetection = false;
 
@@ -179,7 +180,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
       @Override
       public void run() {
-        myGps.startGps();
+        myGps.startGps(DetectorActivity.this.service);
         Log.e("thread", "run: start");
       }
     },0);
@@ -350,6 +351,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
+
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             DetectorActivity.this.lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             bitmapWidth = croppedBitmap.getWidth() - 1;
@@ -433,6 +435,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               for(int i=0; i<4; i++) {
                 instanceBuffer.get(i).clear();
               }
+
+              myGps.startGps(DetectorActivity.this.service);
+              //매칭 함수 돌리
             }
 
 
@@ -845,6 +850,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     Log.e("n", "Navigate 시작" );
     voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
 
+
+
   }
 
   // MapData를 서버로 부터 얻어서 Service 객체에 셋
@@ -1054,7 +1061,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           }
           finally {
 
-            myGps.startGps();
+            myGps.startGps(DetectorActivity.this.service);
             // GPS를 켜고나면 다시 재부팅하라는 안내가 있어야함
             // GPS를 중간에
           }

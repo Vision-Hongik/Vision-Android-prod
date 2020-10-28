@@ -29,7 +29,7 @@ public class MyGps {
     }
 
     @SuppressLint("MissingPermission")
-    public boolean startGps() {
+    public boolean startGps(Service service) {
         Log.e("t", "startGps: Start!!");
 
         if (Build.VERSION.SDK_INT >= 23 &&
@@ -48,19 +48,22 @@ public class MyGps {
             }
             else
             {
+                service.setLatitude(location.getLatitude());
+                service.setLongitude(location.getLongitude());
+
                 Log.e("t", "startGps:" + location.getProvider());
-                Log.e("t", "startGps:" + location.getLongitude());
-                Log.e("t", "startGps:" + location.getLatitude());
+                Log.e("t", "service_longtiude:" + service.getLongitude());
+                Log.e("t", "service_latitude:" + service.getLatitude());
                 Log.e("t", "정확" + location.getAccuracy());
             }
             if(gpsLocationListener == null){
                 Log.e("t", "lm null이다");
             }
             else {
-                lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                        500,
-                        0,
-                        gpsLocationListener);
+//                lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+//                        300,
+//                        0,
+//                        gpsLocationListener);
             }
 
             return flag;
