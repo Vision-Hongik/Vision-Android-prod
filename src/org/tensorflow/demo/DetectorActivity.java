@@ -295,7 +295,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             lines.add(" Longitude: " + service.getLongitude());
             lines.add("");
             lines.add("Src Station: " + service.getSource_Station());
+            lines.add("Src Exit: " + service.getSource_Exit());
             lines.add("Dst Station: " + service.getDest_Station());
+            lines.add("Dst Exit: " + service.getDest_Exit());
+
 
             borderedText.drawLines(canvas, 10, canvas.getHeight() - 100, lines);
           }
@@ -495,37 +498,31 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
   };
 
-
-
-//--Function----------------------------------------------------------------------------------------------------------------------------------------
-
-  // 서비스에 필요한 변수들을 초기화한 후, 안내 시작 함수!
-  public void initService(final MyCallback myCallback){
-
-    final RecognitionListener sourceStationVoiceListener;
-    final RecognitionListener destStationVoiceListener;
-    final RecognitionListener confirmVoiceListener;
-
-    // 마지막 변수 확정 리스너 -> 네, 아니요 답변에 따라, 재귀함수 시작 or navigate 함수 시작.
-    confirmVoiceListener = new RecognitionListener() {
+  public RecognitionListener getRecognitionListner(final MyCallback myCallback){
+    return new RecognitionListener() {
       @Override
       public void onReadyForSpeech(Bundle bundle) {
+
       }
 
       @Override
       public void onBeginningOfSpeech() {
+
       }
 
       @Override
       public void onRmsChanged(float v) {
+
       }
 
       @Override
       public void onBufferReceived(byte[] bytes) {
+
       }
 
       @Override
       public void onEndOfSpeech() {
+
       }
 
       @Override
@@ -580,6 +577,44 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void onResults(Bundle results) {
+        myCallback.callbackBundle(results);
+      }
+
+      @Override
+      public void onPartialResults(Bundle bundle) {
+
+      }
+
+      @Override
+      public void onEvent(int i, Bundle bundle) {
+
+      }
+    };
+  }
+
+
+
+//--Function----------------------------------------------------------------------------------------------------------------------------------------
+
+  // 서비스에 필요한 변수들을 초기화한 후, 안내 시작 함수!
+  public void initService(final MyCallback myCallback){
+
+    final RecognitionListener sourceStationVoiceListener;
+    final RecognitionListener destStationVoiceListener;
+    final RecognitionListener confirmVoiceListener;
+    final RecognitionListener destExitVoiceListener;
+    final RecognitionListener sourceExitVoiceListener;
+
+
+    // 마지막 변수 확정 리스너 -> 네, 아니요 답변에 따라, 재귀함수 시작 or navigate 함수 시작.
+    confirmVoiceListener = getRecognitionListner(new MyCallback() {
+      @Override
+      public void callback() {
+
+      }
+
+      @Override
+      public void callbackBundle(Bundle results) {
         String key = "";
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
@@ -605,6 +640,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               public void callback() {
                 myCallback.callback();
               }
+
+              @Override
+              public void callbackBundle(Bundle result) {
+              }
             });
 
 
@@ -613,91 +652,47 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           e.printStackTrace();
         }
       }
+    });
 
+    // 도착 출구 물어보는 리스너
+    destExitVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
-      public void onPartialResults(Bundle bundle) {
+      public void callback() {
+
       }
 
       @Override
-      public void onEvent(int i, Bundle bundle) {
-      }
+      public void callbackBundle(Bundle results) {
+        String key = "";
+        key = SpeechRecognizer.RESULTS_RECOGNITION;
+        ArrayList<String> mResult = results.getStringArrayList(key);
 
-    };
+        service.setDest_Exit(mResult.get(0));
+        Log.e("v", "End Exit onResults: " + service.getDest_Station());
+
+
+        try {
+          Thread.sleep(2000);
+          voice.TTS(service.getSource_Station() + "역 " + service.getSource_Exit() + " 출구 에서 출발 "  +
+                  service.getDest_Station() + "역 " + service.getDest_Exit() + " 출구 도착이 맞습니까? 네 아니요로 대답해주세요.");
+          voice.setRecognitionListener(confirmVoiceListener);
+          Thread.sleep(7000);
+          voice.STT();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    });
 
     // 도착지 물어보는 리스너
-    destStationVoiceListener = new RecognitionListener() {
+    destStationVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
-      public void onReadyForSpeech(Bundle bundle) {
+      public void callback() {
+
       }
 
       @Override
-      public void onBeginningOfSpeech() {
-      }
-
-      @Override
-      public void onRmsChanged(float v) {
-      }
-
-      @Override
-      public void onBufferReceived(byte[] bytes) {
-      }
-
-      @Override
-      public void onEndOfSpeech() {
-      }
-
-      @Override
-      public void onError(int i) {
-        voice.TTS("음성 에러 5초후 다시 말씀해주세요!");
-        String message;
-
-        switch (i) {
-
-          case SpeechRecognizer.ERROR_AUDIO:
-            message = "오디오 에러";
-            break;
-
-          case SpeechRecognizer.ERROR_CLIENT:
-            message = "클라이언트 에러";
-            break;
-
-          case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-            message = "퍼미션없음";
-            break;
-
-          case SpeechRecognizer.ERROR_NETWORK:
-            message = "네트워크 에러";
-            break;
-
-          case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-            message = "네트웍 타임아웃";
-            break;
-
-          case SpeechRecognizer.ERROR_NO_MATCH:
-            message = "찾을수 없음";;
-            break;
-
-          case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-            message = "바쁘대";
-            break;
-
-          case SpeechRecognizer.ERROR_SERVER:
-            message = "서버이상";;
-            break;
-
-          case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-            message = "말하는 시간초과";
-            break;
-
-          default:
-            message = "알수없음";
-            break;
-        }
-        Log.e("GoogleActivity", "SPEECH ERROR : " + message);
-      }
-
-      @Override
-      public void onResults(Bundle results) {
+      public void callbackBundle(Bundle results) {
         String key = "";
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
@@ -708,105 +703,31 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         try {
           Thread.sleep(2000);
-          voice.TTS("출발지는 " + service.getSource_Station() + "도착지는 " + service.getDest_Station()+ "이 맞습니까? 네 아니요로 대답해주세요.");
-          voice.setRecognitionListener(confirmVoiceListener);
-          Thread.sleep(6000);
+          voice.TTS("몇번 출구로 나가시나요?");
+          voice.setRecognitionListener(destExitVoiceListener);
+          Thread.sleep(2000);
           voice.STT();
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
       }
+    });
 
+    // 출발 출구 물어보는 리스너
+    sourceExitVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
-      public void onPartialResults(Bundle bundle) {
+      public void callback() {
+
       }
 
       @Override
-      public void onEvent(int i, Bundle bundle) {
-      }
-
-    };
-
-    // 출발지 물어보는 리스너
-    sourceStationVoiceListener = new RecognitionListener() {
-      @Override
-      public void onReadyForSpeech(Bundle bundle) {
-      }
-
-      @Override
-      public void onBeginningOfSpeech() {
-      }
-
-      @Override
-      public void onRmsChanged(float v) {
-      }
-
-      @Override
-      public void onBufferReceived(byte[] bytes) {
-      }
-
-      @Override
-      public void onEndOfSpeech() {
-      }
-
-      @Override
-      public void onError(int i) {
-        voice.TTS("음성 에러 5초후 다시 말씀해주세요!");
-        String message;
-
-        switch (i) {
-
-          case SpeechRecognizer.ERROR_AUDIO:
-            message = "오디오 에러";
-            break;
-
-          case SpeechRecognizer.ERROR_CLIENT:
-            message = "클라이언트 에러";
-            break;
-
-          case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-            message = "퍼미션없음";
-            break;
-
-          case SpeechRecognizer.ERROR_NETWORK:
-            message = "네트워크 에러";
-            break;
-
-          case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-            message = "네트웍 타임아웃";
-            break;
-
-          case SpeechRecognizer.ERROR_NO_MATCH:
-            message = "찾을수 없음";;
-            break;
-
-          case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-            message = "바쁘대";
-            break;
-
-          case SpeechRecognizer.ERROR_SERVER:
-            message = "서버이상";;
-            break;
-
-          case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-            message = "말하는 시간초과";
-            break;
-
-          default:
-            message = "알수없음";
-            break;
-        }
-        Log.e("GoogleActivity", "SPEECH ERROR : " + message);
-      }
-
-      @Override
-      public void onResults(Bundle results) {
+      public void callbackBundle(Bundle results) {
         String key = "";
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
 
-        service.setSource_Station(mResult.get(0));
-        Log.e("v", "Start Station onResults: " + service.getSource_Station() );
+        service.setSource_Exit(mResult.get(0));
+        Log.e("v", "Start Exit onResults: " + service.getSource_Exit() );
 
         try {
           Thread.sleep(2000);
@@ -822,16 +743,39 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
         voice.STT();
       }
+    });
 
+    // 출발지 물어보는 리스너
+    sourceStationVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
-      public void onPartialResults(Bundle bundle) {
+      public void callback() {
+
       }
 
       @Override
-      public void onEvent(int i, Bundle bundle) {
-      }
+      public void callbackBundle(Bundle results) {
+        String key = "";
+        key = SpeechRecognizer.RESULTS_RECOGNITION;
+        ArrayList<String> mResult = results.getStringArrayList(key);
 
-    };
+        service.setSource_Station(mResult.get(0));
+        Log.e("v", "Start Station onResults: " + service.getSource_Station() );
+
+        try {
+          Thread.sleep(2000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        voice.TTS("몇번 출구에서 출발 하시나요?");
+        voice.setRecognitionListener(sourceExitVoiceListener);
+        try {
+          Thread.sleep(2000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        voice.STT();
+      }
+    });
 
 
     // init 시작
@@ -844,6 +788,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
     voice.STT();
   }
+
 
 
   public void navigate(){
@@ -925,57 +870,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     return Bitmap.createBitmap(bitmap,(int)location.left,(int)location.top,(int)(location.right-location.left),(int)(location.bottom-location.top));
   }
 
-  RecognitionListener getRecognitionListener(final MyCallback myCallback){
-
-    RecognitionListener recognitionListener = new RecognitionListener() {
-      @Override
-      public void onReadyForSpeech(Bundle bundle) {
-
-      }
-
-      @Override
-      public void onBeginningOfSpeech() {
-
-      }
-
-      @Override
-      public void onRmsChanged(float v) {
-
-      }
-
-      @Override
-      public void onBufferReceived(byte[] bytes) {
-
-      }
-
-      @Override
-      public void onEndOfSpeech() {
-
-      }
-
-      @Override
-      public void onError(int i) {
-
-      }
-
-      @Override
-      public void onResults(Bundle bundle) {
-        myCallback.callback();
-      }
-
-      @Override
-      public void onPartialResults(Bundle bundle) {
-
-      }
-
-      @Override
-      public void onEvent(int i, Bundle bundle) {
-
-      }
-    };
-    return recognitionListener;
-  }
-
 
   @Override
   public boolean onKeyDown(final int keyCode, final KeyEvent event) {
@@ -1013,6 +907,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         @Override
         public void callback() {
           navigate();
+        }
+
+        @Override
+        public void callbackBundle(Bundle result) {
+
         }
       });
       return true;
