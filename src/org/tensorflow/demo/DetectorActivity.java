@@ -350,7 +350,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           public void run() {
             if(!DetectorActivity.this.yoloFirstStartFlag){
               DetectorActivity.this.yoloFirstStartFlag = true;
-              voice.TTS("로딩 완료 시작 가능합니다.");
+              voice.TTS("안녕하세요! Vision입니다.");
             }
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
@@ -527,7 +527,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void onError(int i) {
-        voice.TTS("음성 에러 5초후 다시 말씀해주세요!");
+        voice.TTS("음성 에러. 5초후 다시 말씀해주세요!");
         String message;
 
         switch (i) {
@@ -595,6 +595,29 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 
 //--Function----------------------------------------------------------------------------------------------------------------------------------------
+
+  /* 한글을 영어로 변환 */
+
+  //초성 - 가(ㄱ), 날(ㄴ) 닭(ㄷ)
+    public static String[] arrChoSungEng = { "k","K","n","d","D","r", "m", "b","B","s","S",
+            "a","j","J","ch","c","t","p","h"};
+
+  //중성 - 가(ㅏ), 야(ㅑ), 뺨(ㅑ)
+    public static String[] arrJungSungEng = {
+            "a", "e", "ya", "ae", "eo", "e", "yeo", "e", "o", "wa", "wae", "oe",
+            "yo", "u", "wo", "we", "wi", "yu", "eu", "ui", "i"
+    };
+
+  //종성 - 가(없음), 갈(ㄹ) 천(ㄴ)
+  public static String[] arrJongSungEng = { "", "k", "K", "ks", "n", "nj", "nh",
+          "d", "l", "lg", "lm", "lb", "ls", "lt", "lp", "lh", "m", "b", "bs", "s", "ss",
+          "ng", "j", "ch", "c", "t", "p", "h"};
+
+  //단일 자음 - ㄱ,ㄴ,ㄷ,ㄹ... (ㄸ,ㅃ,ㅉ은 단일자음(초성)으로 쓰이지만 단일자음으론 안쓰임)
+  public static String[] arrSingleJaumEng = {"r", "R", "rt", "s", "sw", "sg", "e", "E", "f",
+          "fr", "fa", "fq", "ft", "fx", "fv", "fg", "a", "q", "Q", "qt", "t", "T", "d", "w", "W",
+          "c", "z", "x", "v", "g"};
+
 
   // 서비스에 필요한 변수들을 초기화한 후, 안내 시작 함수!
   public void initService(final MyCallback myCallback){
@@ -722,11 +745,52 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "";
+        String stt_srcExit, srcExitNumber, text="", key = "";
+        int temp = 0;
+
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
+        stt_srcExit = mResult.get(0);
+        // Log.e("mResult.get(0)", mResult.get(0));
 
-        service.setSource_Exit(mResult.get(0));
+        if (stt_srcExit.contains("번")) {
+          srcExitNumber=stt_srcExit.split("번")[0];
+        }
+        else srcExitNumber = stt_srcExit; // 예시로 srcExitNumber="3" or "삼"
+        // Log.e("한번 가공후", srcExitNumber);
+
+        if (srcExitNumber.matches("^[0-9]+$")) Log.e("srcExitNumber", "숫자임");
+        else {
+            Log.e("srcExitNumber", "한글임");
+            text = srcExitNumber;
+          switch(text) {
+            case "일" :
+              temp = 1;
+              break;
+            case "이" :
+              temp = 2;
+              break;
+            case "삼" :
+              temp = 3;
+              break;
+            case "사" :
+              temp = 4;
+            case "오" :
+              temp = 5;
+            case "육" :
+              temp = 6;
+            case "칠" :
+              temp = 7;
+            case "팔" :
+              temp = 8;
+            case "구" :
+              temp = 9;
+              break;
+            default : temp=0;
+          }
+          srcExitNumber=Integer.toString(temp);
+        }
+        service.setSource_Exit(srcExitNumber);
         Log.e("v", "Start Exit onResults: " + service.getSource_Exit() );
 
         try {
@@ -749,14 +813,61 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     sourceStationVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
       public void callback() {
-
       }
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "";
+        String key = "", word = "", resultEng= "";
+
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
+        word = mResult.get(0);
+        for (int i = 0; i < word.length(); i++) {
+
+          //  한글자씩 읽음
+          char chars = (char) (word.charAt(i) - 0xAC00);
+          if (chars >= 0 && chars <= 11172) {
+            /* A. 자음과 모음이 합쳐진 글자인경우 */
+
+            /* A-1. 초/중/종성 분리 */
+            int chosung = chars / (21 * 28);
+            int jungsung = chars % (21 * 28) / 28;
+            int jongsung = chars % (21 * 28) % 28;
+
+            /* 알파벳으로 */
+            resultEng = resultEng + arrChoSungEng[chosung] + arrJungSungEng[jungsung];
+            if (jongsung != 0x0000) {
+              /* A-3. 종성이 존재할경우 result에 담는다 */
+              resultEng =  resultEng + arrJongSungEng[jongsung];
+            }
+
+          } else {
+            /* B. 한글이 아니거나 자음만 있을경우 */
+            // 알파벳으로
+//            if( chars>=34097 && chars<=34126){
+//              /* 단일자음인 경우 */
+//              int jaum 	= (chars-34097);
+//              resultEng = resultEng + arrSingleJaumEng[jaum];
+//            } else if( chars>=34127 && chars<=34147) {
+//              /* 단일모음인 경우 */
+//              int moum 	= (chars-34127);
+//              resultEng = resultEng + arrJungSungEng[moum];
+//            } else {
+//              /* 알파벳인 경우 */
+//              resultEng = resultEng + ((char)(chars + 0xAC00));
+//            }
+            if( chars>=34127 && chars<=34147) {
+              /* 단일모음인 경우 */
+              int moum = (chars - 34127);
+              resultEng = resultEng + arrJungSungEng[moum];
+            } else {
+              /* 알파벳인 경우 */
+              resultEng = resultEng + ((char)(chars + 0xAC00));
+            }
+          }//if
+
+        }
+        Log.e("resultEng:", resultEng);
 
         service.setSource_Station(mResult.get(0));
         Log.e("v", "Start Station onResults: " + service.getSource_Station() );
@@ -794,7 +905,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   public void navigate(){
     Log.e("n", "Navigate 시작" );
     voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
-
 
 
   }
