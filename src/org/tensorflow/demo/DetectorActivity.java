@@ -406,7 +406,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 instanceBuffer.get(flag).replace(key, result);
               }
 
-              Log.e("result", "=========================result? : " + result + ", key: " + key);
+              //Log.e("result", "=========================result? : " + result + ", key: " + key);
 
               if (location != null && result.getConfidence() >= minimumConfidence) {
                 canvas.drawRect(location, paint);
@@ -420,7 +420,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 //          시간측정
             DetectorActivity.this.lastProcessingTimeMs1 += SystemClock.uptimeMillis() - startTime;
-            Log.e("Time", "=========================Time? : " + lastProcessingTimeMs1);
+            //Log.e("Time", "=========================Time? : " + lastProcessingTimeMs1);
             // 2초 지날때마다 갱신
             if(DetectorActivity.this.lastProcessingTimeMs1 >= BUFFERTIME * 1000){
               for(int i=0; i<4; i++){
@@ -596,8 +596,99 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 //--Function----------------------------------------------------------------------------------------------------------------------------------------
 
-  /* 한글을 영어로 변환 */
+  public String recognizeExitNum(String stt_Exit) {
+        String exitNum = "", exitMatch = "";
+        int targetExit = 0;
 
+        if (stt_Exit.contains("번")) {
+            exitNum = stt_Exit.split("번")[0];
+        } else exitNum = stt_Exit; // 예시로 srcExitNumber="3" or "삼"
+        Log.e("한번 가공후", exitNum);
+
+        if (exitNum.matches("^[0-9]+$")) {
+            Log.e("srcExitNumber", "숫자임");
+        } else {
+            Log.e("srcExitNumber", "한글임");
+            exitMatch = exitNum;
+            switch (exitMatch) {
+                case "일":
+                    targetExit = 1;
+                    break;
+                case "이":
+                    targetExit = 2;
+                    break;
+                case "삼":
+                    targetExit = 3;
+                    break;
+                case "사":
+                    targetExit = 4;
+                case "오":
+                    targetExit = 5;
+                case "육":
+                    targetExit = 6;
+                case "칠":
+                    targetExit = 7;
+                case "팔":
+                    targetExit = 8;
+                case "구":
+                    targetExit = 9;
+                    break;
+                default:
+                    targetExit = 0;
+            }
+            exitNum = Integer.toString(targetExit);
+        }
+        return exitNum;
+    };
+
+  public String recognizeStation(String stt_Station) {
+    String resultEng= "", stationMatch="", targetStation="";
+    Log.e("가공전 ", targetStation);
+
+    if (stt_Station.contains("역")) {
+      targetStation = stt_Station.split("역")[0];
+    } else targetStation = stt_Station;
+
+    Log.e("한번 가공후", targetStation);
+
+//    for (int i = 0; i < stt_Station.length(); i++) {
+//
+//      //  한글자씩 읽음
+//      char chars = (char) (stt_Station.charAt(i) - 0xAC00);
+//      if (chars >= 0 && chars <= 11172) {
+//        /* A. 자음과 모음이 합쳐진 글자인경우 */
+//
+//        /* A-1. 초/중/종성 분리 */
+//        int chosung = chars / (21 * 28);
+//        int jungsung = chars % (21 * 28) / 28;
+//        int jongsung = chars % (21 * 28) % 28;
+//
+//        /* 알파벳으로 */
+//        resultEng = resultEng + arrChoSungEng[chosung] + arrJungSungEng[jungsung];
+//        if (jongsung != 0x0000) {
+//          /* A-3. 종성이 존재할경우 result에 담는다 */
+//          resultEng =  resultEng + arrJongSungEng[jongsung];
+//        }
+//
+//      } else {
+//        /* B. 한글이 아니거나 자음만 있을경우 */
+//        // 알파벳으로
+//        if( chars>=34127 && chars<=34147) {
+//          /* 단일모음인 경우 */
+//          int moum = (chars - 34127);
+//          resultEng = resultEng + arrJungSungEng[moum];
+//        } else {
+//          /* 알파벳인 경우 */
+//          resultEng = resultEng + ((char)(chars + 0xAC00));
+//        }
+//      }//if
+//    }
+//    Log.e("resultEng:", resultEng);
+
+    return targetStation;
+  };
+
+  /* 한글을 영어로 변환 */
   //초성 - 가(ㄱ), 날(ㄴ) 닭(ㄷ)
     public static String[] arrChoSungEng = { "k","K","n","d","D","r", "m", "b","B","s","S",
             "a","j","J","ch","c","t","p","h"};
@@ -686,18 +777,18 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "";
+        String key = "",stt_dstExit="", dstExitNumber="";;
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
-
-        service.setDest_Exit(mResult.get(0));
-        Log.e("v", "End Exit onResults: " + service.getDest_Station());
-
+        stt_dstExit = mResult.get(0);
+        dstExitNumber=recognizeExitNum(stt_dstExit);
+        service.setDest_Exit(dstExitNumber);
+        Log.e("v", "Destination Exit onResults: " + service.getDest_Exit());
 
         try {
           Thread.sleep(2000);
-          voice.TTS(service.getSource_Station() + "역 " + service.getSource_Exit() + " 출구 에서 출발 "  +
-                  service.getDest_Station() + "역 " + service.getDest_Exit() + " 출구 도착이 맞습니까? 네 아니요로 대답해주세요.");
+          voice.TTS(service.getSource_Station() + "역 " + service.getSource_Exit() + " 출구 에서 출발, "  +
+                  service.getDest_Station() + "역 " + service.getDest_Exit() + " 출구 도착이 맞습니까? 네, 아니요로 대답해주세요.");
           voice.setRecognitionListener(confirmVoiceListener);
           Thread.sleep(7000);
           voice.STT();
@@ -716,11 +807,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "";
+
+        String key = "", stt_dstStation = "", dstStationText= "";
+
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
-
-        service.setDest_Station(mResult.get(0));
+        stt_dstStation = mResult.get(0);
+        dstStationText = recognizeStation(stt_dstStation);
+        service.setDest_Station(dstStationText);
         Log.e("v", "End Station onResults: " + service.getDest_Station());
 
 
@@ -745,51 +839,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String stt_srcExit, srcExitNumber, text="", key = "";
-        int temp = 0;
+        String key = "", stt_srcExit="", srcExitNumber="";
 
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
         stt_srcExit = mResult.get(0);
-        // Log.e("mResult.get(0)", mResult.get(0));
-
-        if (stt_srcExit.contains("번")) {
-          srcExitNumber=stt_srcExit.split("번")[0];
-        }
-        else srcExitNumber = stt_srcExit; // 예시로 srcExitNumber="3" or "삼"
-        // Log.e("한번 가공후", srcExitNumber);
-
-        if (srcExitNumber.matches("^[0-9]+$")) Log.e("srcExitNumber", "숫자임");
-        else {
-            Log.e("srcExitNumber", "한글임");
-            text = srcExitNumber;
-          switch(text) {
-            case "일" :
-              temp = 1;
-              break;
-            case "이" :
-              temp = 2;
-              break;
-            case "삼" :
-              temp = 3;
-              break;
-            case "사" :
-              temp = 4;
-            case "오" :
-              temp = 5;
-            case "육" :
-              temp = 6;
-            case "칠" :
-              temp = 7;
-            case "팔" :
-              temp = 8;
-            case "구" :
-              temp = 9;
-              break;
-            default : temp=0;
-          }
-          srcExitNumber=Integer.toString(temp);
-        }
+        srcExitNumber=recognizeExitNum(stt_srcExit); //모든 인식 경우에 대해 출구 결과값을 하나로 도출해냄.
         service.setSource_Exit(srcExitNumber);
         Log.e("v", "Start Exit onResults: " + service.getSource_Exit() );
 
@@ -817,59 +872,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "", word = "", resultEng= "";
+        String key = "", stt_srcStation = "", srcStationText= "";
 
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
-        word = mResult.get(0);
-        for (int i = 0; i < word.length(); i++) {
-
-          //  한글자씩 읽음
-          char chars = (char) (word.charAt(i) - 0xAC00);
-          if (chars >= 0 && chars <= 11172) {
-            /* A. 자음과 모음이 합쳐진 글자인경우 */
-
-            /* A-1. 초/중/종성 분리 */
-            int chosung = chars / (21 * 28);
-            int jungsung = chars % (21 * 28) / 28;
-            int jongsung = chars % (21 * 28) % 28;
-
-            /* 알파벳으로 */
-            resultEng = resultEng + arrChoSungEng[chosung] + arrJungSungEng[jungsung];
-            if (jongsung != 0x0000) {
-              /* A-3. 종성이 존재할경우 result에 담는다 */
-              resultEng =  resultEng + arrJongSungEng[jongsung];
-            }
-
-          } else {
-            /* B. 한글이 아니거나 자음만 있을경우 */
-            // 알파벳으로
-//            if( chars>=34097 && chars<=34126){
-//              /* 단일자음인 경우 */
-//              int jaum 	= (chars-34097);
-//              resultEng = resultEng + arrSingleJaumEng[jaum];
-//            } else if( chars>=34127 && chars<=34147) {
-//              /* 단일모음인 경우 */
-//              int moum 	= (chars-34127);
-//              resultEng = resultEng + arrJungSungEng[moum];
-//            } else {
-//              /* 알파벳인 경우 */
-//              resultEng = resultEng + ((char)(chars + 0xAC00));
-//            }
-            if( chars>=34127 && chars<=34147) {
-              /* 단일모음인 경우 */
-              int moum = (chars - 34127);
-              resultEng = resultEng + arrJungSungEng[moum];
-            } else {
-              /* 알파벳인 경우 */
-              resultEng = resultEng + ((char)(chars + 0xAC00));
-            }
-          }//if
-
-        }
-        Log.e("resultEng:", resultEng);
-
-        service.setSource_Station(mResult.get(0));
+        stt_srcStation = mResult.get(0);
+        srcStationText = recognizeStation(stt_srcStation);
+        service.setSource_Station(srcStationText);
         Log.e("v", "Start Station onResults: " + service.getSource_Station() );
 
         try {
