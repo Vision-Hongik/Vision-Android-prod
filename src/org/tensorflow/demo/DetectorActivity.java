@@ -350,7 +350,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           public void run() {
             if(!DetectorActivity.this.yoloFirstStartFlag){
               DetectorActivity.this.yoloFirstStartFlag = true;
-              voice.TTS("안녕하세요! Vision입니다. 시작 가능합니다.");
+              voice.TTS("로딩 완료! Vision, 시작 가능합니다.");
             }
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
@@ -619,15 +619,18 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   //어디 지하철 역인지 파악하는 메소드
   public String recognizeStation(String stt_Station) {
-    String resultEng= "", stationMatch="", targetStation="";
-    //Log.e("가공전 ", targetStation);
+    String resultEng= "", targetStation="";
 
     if (stt_Station.contains("역")) {
       targetStation = stt_Station.split("역")[0];
-    } else targetStation = stt_Station;
+    }
+    else targetStation = stt_Station;
 
+    if (targetStation.contains("수") || targetStation.contains("상")) targetStation = "상수";
+    else if (targetStation.contains("정") || targetStation.contains("합")) targetStation = "합정";
     //Log.e("한번 가공후", targetStation);
 
+    /*아래는.. 당장은 안쓸 메소드 (ex. 부산->busan으로 바꾸는)*/
 //    for (int i = 0; i < stt_Station.length(); i++) {
 //
 //      //  한글자씩 읽음
@@ -660,7 +663,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //        }
 //      }//if
 //    }
-//    Log.e("resultEng:", resultEng);
+//    Log.e("result_in_eng:", resultEng);
 
     return targetStation;
   };
@@ -673,12 +676,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         if (stt_Exit.contains("번")) {
             exitNum = stt_Exit.split("번")[0];
         } else exitNum = stt_Exit; // 예시로 srcExitNumber="3" or "삼"
-        Log.e("한번 가공후", exitNum);
+        //Log.e("한번 가공후", exitNum);
 
         if (exitNum.matches("^[0-9]+$")) {
             Log.e("srcExitNumber", "숫자임");
         } else {
-            Log.e("srcExitNumber", "한글임");
+            //Log.e("srcExitNumber", "한글임");
             exitMatch = exitNum;
             switch (exitMatch) {
                 case "일":
@@ -702,6 +705,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     targetExit = 8;
                 case "구":
                     targetExit = 9;
+                    break;
+                case "십":
+                    targetExit = 10;
                     break;
                 default:
                     targetExit = 0;
@@ -788,8 +794,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         try {
           Thread.sleep(2000);
-          voice.TTS(service.getSource_Station() + "역 " + service.getSource_Exit() + " 출구 에서 출발, "  +
-                  service.getDest_Station() + "역 " + service.getDest_Exit() + " 출구 도착이 맞습니까? 네, 아니요로 대답해주세요.");
+          voice.TTS(service.getSource_Station() + "역 " + service.getSource_Exit() + "번 출구, 에서 출발, "  +
+                  service.getDest_Station() + "역 " + service.getDest_Exit() + "번 출구, 도착이 맞습니까? 네, 아니요로 대답해주세요.");
           voice.setRecognitionListener(confirmVoiceListener);
           Thread.sleep(7000);
           voice.STT();
@@ -814,6 +820,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
         stt_dstStation = mResult.get(0);
+        Log.e("stt_dstStation", stt_dstStation ); //입력값 자체를 로그 찍어보기
+
         dstStationText = recognizeStation(stt_dstStation);
         service.setDest_Station(dstStationText);
         Log.e("v", "End Station onResults: " + service.getDest_Station());
@@ -877,10 +885,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
-        stt_srcStation = mResult.get(0);
-        srcStationText = recognizeStation(stt_srcStation);
+        stt_srcStation = mResult.get(0); //입력받은 단어를 새로운 변수 stt_srcStation에 담음
+        Log.e("stt_srcStation", stt_srcStation ); //입력값 자체를 로그 찍어보기
+
+        srcStationText = recognizeStation(stt_srcStation); //stt_srcStation을 파싱하여 출구 숫자값만 파악하게끔 함
         service.setSource_Station(srcStationText);
-        Log.e("v", "Start Station onResults: " + service.getSource_Station() );
+        Log.e("v", "Start Station onResults: " + service.getSource_Station() ); //입력값 파싱 후 역 이름 로그 찍어보기
 
         try {
           Thread.sleep(2000);
