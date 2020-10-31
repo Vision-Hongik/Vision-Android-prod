@@ -350,7 +350,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           public void run() {
             if(!DetectorActivity.this.yoloFirstStartFlag){
               DetectorActivity.this.yoloFirstStartFlag = true;
-              voice.TTS("안녕하세요! Vision입니다.");
+              voice.TTS("안녕하세요! Vision입니다. 시작 가능합니다.");
             }
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
@@ -406,7 +406,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 instanceBuffer.get(flag).replace(key, result);
               }
 
-              //Log.e("result", "=========================result? : " + result + ", key: " + key);
+              Log.e("result", "=========================result? : " + result + ", key: " + key);
 
               if (location != null && result.getConfidence() >= minimumConfidence) {
                 canvas.drawRect(location, paint);
@@ -596,6 +596,76 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 //--Function----------------------------------------------------------------------------------------------------------------------------------------
 
+  /* 한글을 영어로 변환 */
+  //초성 - 가(의 ㄱ), 날(ㄴ) 닭(ㄷ)
+  public static String[] arrChoSungEng = { "k","K","n","d","D","r", "m", "b","B","s","S",
+          "a","j","J","ch","c","t","p","h"};
+
+  //중성 - 가(의 ㅏ), 야(ㅑ), 뺨(ㅑ)
+  public static String[] arrJungSungEng = {
+          "a", "e", "ya", "ae", "eo", "e", "yeo", "e", "o", "wa", "wae", "oe",
+          "yo", "u", "wo", "we", "wi", "yu", "eu", "ui", "i"
+  };
+
+  //종성 - 가(없음), 갈(ㄹ)
+  public static String[] arrJongSungEng = { "", "k", "K", "ks", "n", "nj", "nh",
+          "d", "l", "lg", "lm", "lb", "ls", "lt", "lp", "lh", "m", "b", "bs", "s", "ss",
+          "ng", "j", "ch", "c", "t", "p", "h"};
+
+  //단일 자음 - ㄱ,ㄴ,ㄷ,ㄹ... (ㄸ,ㅃ,ㅉ은 단일자음(초성)으로 쓰이지만 단일자음으론 안쓰임)
+  public static String[] arrSingleJaumEng = {"r", "R", "rt", "s", "sw", "sg", "e", "E", "f",
+          "fr", "fa", "fq", "ft", "fx", "fv", "fg", "a", "q", "Q", "qt", "t", "T", "d", "w", "W",
+          "c", "z", "x", "v", "g"};
+
+  //어디 지하철 역인지 파악하는 메소드
+  public String recognizeStation(String stt_Station) {
+    String resultEng= "", stationMatch="", targetStation="";
+    //Log.e("가공전 ", targetStation);
+
+    if (stt_Station.contains("역")) {
+      targetStation = stt_Station.split("역")[0];
+    } else targetStation = stt_Station;
+
+    //Log.e("한번 가공후", targetStation);
+
+//    for (int i = 0; i < stt_Station.length(); i++) {
+//
+//      //  한글자씩 읽음
+//      char chars = (char) (stt_Station.charAt(i) - 0xAC00);
+//      if (chars >= 0 && chars <= 11172) {
+//        /* A. 자음과 모음이 합쳐진 글자인경우 */
+//
+//        /* A-1. 초/중/종성 분리 */
+//        int chosung = chars / (21 * 28);
+//        int jungsung = chars % (21 * 28) / 28;
+//        int jongsung = chars % (21 * 28) % 28;
+//
+//        /* 알파벳으로 */
+//        resultEng = resultEng + arrChoSungEng[chosung] + arrJungSungEng[jungsung];
+//        if (jongsung != 0x0000) {
+//          /* A-3. 종성이 존재할경우 result에 담는다 */
+//          resultEng =  resultEng + arrJongSungEng[jongsung];
+//        }
+//
+//      } else {
+//        /* B. 한글이 아니거나 자음만 있을경우 */
+//        // 알파벳으로
+//        if( chars>=34127 && chars<=34147) {
+//          /* 단일모음인 경우 */
+//          int moum = (chars - 34127);
+//          resultEng = resultEng + arrJungSungEng[moum];
+//        } else {
+//          /* 알파벳인 경우 */
+//          resultEng = resultEng + ((char)(chars + 0xAC00));
+//        }
+//      }//if
+//    }
+//    Log.e("resultEng:", resultEng);
+
+    return targetStation;
+  };
+
+  //몇번 출구인지 파악하는 메소드
   public String recognizeExitNum(String stt_Exit) {
         String exitNum = "", exitMatch = "";
         int targetExit = 0;
@@ -641,74 +711,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         return exitNum;
     };
 
-  public String recognizeStation(String stt_Station) {
-    String resultEng= "", stationMatch="", targetStation="";
-    Log.e("가공전 ", targetStation);
-
-    if (stt_Station.contains("역")) {
-      targetStation = stt_Station.split("역")[0];
-    } else targetStation = stt_Station;
-
-    Log.e("한번 가공후", targetStation);
-
-//    for (int i = 0; i < stt_Station.length(); i++) {
-//
-//      //  한글자씩 읽음
-//      char chars = (char) (stt_Station.charAt(i) - 0xAC00);
-//      if (chars >= 0 && chars <= 11172) {
-//        /* A. 자음과 모음이 합쳐진 글자인경우 */
-//
-//        /* A-1. 초/중/종성 분리 */
-//        int chosung = chars / (21 * 28);
-//        int jungsung = chars % (21 * 28) / 28;
-//        int jongsung = chars % (21 * 28) % 28;
-//
-//        /* 알파벳으로 */
-//        resultEng = resultEng + arrChoSungEng[chosung] + arrJungSungEng[jungsung];
-//        if (jongsung != 0x0000) {
-//          /* A-3. 종성이 존재할경우 result에 담는다 */
-//          resultEng =  resultEng + arrJongSungEng[jongsung];
-//        }
-//
-//      } else {
-//        /* B. 한글이 아니거나 자음만 있을경우 */
-//        // 알파벳으로
-//        if( chars>=34127 && chars<=34147) {
-//          /* 단일모음인 경우 */
-//          int moum = (chars - 34127);
-//          resultEng = resultEng + arrJungSungEng[moum];
-//        } else {
-//          /* 알파벳인 경우 */
-//          resultEng = resultEng + ((char)(chars + 0xAC00));
-//        }
-//      }//if
-//    }
-//    Log.e("resultEng:", resultEng);
-
-    return targetStation;
-  };
-
-  /* 한글을 영어로 변환 */
-  //초성 - 가(ㄱ), 날(ㄴ) 닭(ㄷ)
-    public static String[] arrChoSungEng = { "k","K","n","d","D","r", "m", "b","B","s","S",
-            "a","j","J","ch","c","t","p","h"};
-
-  //중성 - 가(ㅏ), 야(ㅑ), 뺨(ㅑ)
-    public static String[] arrJungSungEng = {
-            "a", "e", "ya", "ae", "eo", "e", "yeo", "e", "o", "wa", "wae", "oe",
-            "yo", "u", "wo", "we", "wi", "yu", "eu", "ui", "i"
-    };
-
-  //종성 - 가(없음), 갈(ㄹ) 천(ㄴ)
-  public static String[] arrJongSungEng = { "", "k", "K", "ks", "n", "nj", "nh",
-          "d", "l", "lg", "lm", "lb", "ls", "lt", "lp", "lh", "m", "b", "bs", "s", "ss",
-          "ng", "j", "ch", "c", "t", "p", "h"};
-
-  //단일 자음 - ㄱ,ㄴ,ㄷ,ㄹ... (ㄸ,ㅃ,ㅉ은 단일자음(초성)으로 쓰이지만 단일자음으론 안쓰임)
-  public static String[] arrSingleJaumEng = {"r", "R", "rt", "s", "sw", "sg", "e", "E", "f",
-          "fr", "fa", "fq", "ft", "fx", "fv", "fg", "a", "q", "Q", "qt", "t", "T", "d", "w", "W",
-          "c", "z", "x", "v", "g"};
-
 
   // 서비스에 필요한 변수들을 초기화한 후, 안내 시작 함수!
   public void initService(final MyCallback myCallback){
@@ -718,7 +720,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     final RecognitionListener confirmVoiceListener;
     final RecognitionListener destExitVoiceListener;
     final RecognitionListener sourceExitVoiceListener;
-
 
     // 마지막 변수 확정 리스너 -> 네, 아니요 답변에 따라, 재귀함수 시작 or navigate 함수 시작.
     confirmVoiceListener = getRecognitionListner(new MyCallback() {
@@ -777,7 +778,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "",stt_dstExit="", dstExitNumber="";;
+        String key = "",stt_dstExit="", dstExitNumber="";
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
         stt_dstExit = mResult.get(0);
@@ -909,13 +910,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     voice.STT();
   }
 
-
-
   public void navigate(){
     Log.e("n", "Navigate 시작" );
     voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
-
-
+    // ...
   }
 
   // MapData를 서버로 부터 얻어서 Service 객체에 셋
@@ -964,7 +962,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     MapRequest jsonRequest = new MapRequest(stationName, jsonArrayListener);
     this.requestQueue.add(jsonRequest);
   }
-
 
   // OcrString을 얻어서 TTS
   public void getOcrString(Bitmap bitmap,final Response.Listener<JSONObject> ocrListener){
