@@ -692,17 +692,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     break;
                 case "삼":
                     targetExit = 3;
-                    break;
+                  break;
                 case "사":
                     targetExit = 4;
+                  break;
                 case "오":
                     targetExit = 5;
+                  break;
                 case "육":
                     targetExit = 6;
+                  break;
                 case "칠":
                     targetExit = 7;
+                  break;
                 case "팔":
                     targetExit = 8;
+                  break;
                 case "구":
                     targetExit = 9;
                     break;
@@ -711,6 +716,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     break;
                 default:
                     targetExit = 0;
+                  break;
             }
             exitNum = Integer.toString(targetExit);
         }
