@@ -113,7 +113,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final DetectorMode MODE = DetectorMode.YOLO;
 
   // Minimum detection confidence to track a detection.
-  private static final float MINIMUM_CONFIDENCE_YOLO = 0.25f;
+  public static final float MINIMUM_CONFIDENCE_YOLO = 0.4f;
 
   private static final boolean MAINTAIN_ASPECT = MODE == DetectorMode.YOLO;
 
@@ -921,8 +921,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   public void navigate(){
-    Log.e("n", "Navigate 시작" );
-    voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
+
     // ...
   }
 
@@ -1032,7 +1031,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       initService(new MyCallback() {
         @Override
         public void callback() {
-          navigate();
+          Log.e("n", "Navigate 시작" );
+          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
         }
 
         @Override

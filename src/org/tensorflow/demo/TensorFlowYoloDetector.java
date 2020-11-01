@@ -34,7 +34,7 @@ public class TensorFlowYoloDetector implements Classifier {
   private static final Logger LOGGER = new Logger();
 
   // Only return this many results with at least this confidence.
-  private static final int MAX_RESULTS = 5;
+  private static final int MAX_RESULTS = 10;
 
   private static final int NUM_CLASSES = 14;
 
@@ -224,7 +224,7 @@ public class TensorFlowYoloDetector implements Classifier {
           }
 
           final float confidenceInClass = maxClass * confidence;
-          if (confidenceInClass > 0.20) {
+          if (confidenceInClass > DetectorActivity.MINIMUM_CONFIDENCE_YOLO) {
             LOGGER.i(
                 "%s (%d) %f %s", LABELS[detectedClass], detectedClass, confidenceInClass, rect);
             pq.add(new Recognition("" + offset, detectedClass, LABELS[detectedClass], confidenceInClass, rect));
