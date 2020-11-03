@@ -431,7 +431,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   Log.e("key",  (i+1) + "사분면, value: " + instanceBuffer.get(i).get(nKey));
                 }
               }
-              // board 짤라서 -> OCR 보내기
+              // navigate 실행
+              navigate();
 
               // 초기화
               DetectorActivity.this.lastProcessingTimeMs1 = 0;
@@ -926,8 +927,20 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     voice.STT();
   }
 
-  public void navigate(){
+  public void announceInstance(){
 
+    // ...
+  }
+
+  public void matchSector(){
+    // 현재 섹터 배정
+    // GPS 비교
+    //
+  }
+
+  public void navigate(){
+    announceInstance();
+    matchSector();
     // ...
   }
 
