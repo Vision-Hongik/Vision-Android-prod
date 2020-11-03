@@ -135,7 +135,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap cropSignBitmap = null;
   private float bitmapWidth;
   private float bitmapHeight;
-  ArrayList< Hashtable<Integer, Classifier.Recognition>> instanceBuffer = new ArrayList<Hashtable<Integer, Classifier.Recognition>>();
+
   private static final int BUFFERTIME = 3;
 
   private boolean computingDetection = false;
@@ -160,8 +160,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Compass compass;
   private SOTWFormatter sotwFormatter;
 
-
   private boolean yoloFirstStartFlag = false;
+
+  public ArrayList< Hashtable<Integer, Classifier.Recognition>> instanceBuffer = new ArrayList<Hashtable<Integer, Classifier.Recognition>>();
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
@@ -278,14 +279,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             lines.add("Instance Buffer");
             lines.add("");
             for(int i=0; i<4; i++){
+              boolean flag_buffer = false;
               Set keySet = DetectorActivity.this.instanceBuffer.get(i).keySet();
               Iterator iterKey = keySet.iterator();
               String tmp = (i+1) +"사분면: ";
               while(iterKey.hasNext()){
+                flag_buffer = true;
                 int nKey = (int) iterKey.next();
                 tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(i).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(i).get(nKey).getCount()+")";
               }
-              lines.add(tmp);
+              if(flag_buffer)
+                lines.add(tmp);
             }
             lines.add("");
             lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
@@ -423,6 +427,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             //Log.e("Time", "=========================Time? : " + lastProcessingTimeMs1);
             // 2초 지날때마다 갱신
             if(DetectorActivity.this.lastProcessingTimeMs1 >= BUFFERTIME * 1000){
+
+              // buffer 담긴 Instance log 찍어보기
               for(int i=0; i<4; i++){
                 Set keySet = instanceBuffer.get(i).keySet();
                 Iterator iterKey = keySet.iterator();
@@ -431,6 +437,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   Log.e("key",  (i+1) + "사분면, value: " + instanceBuffer.get(i).get(nKey));
                 }
               }
+
+              // GPS Update
+              myGps.startGps(DetectorActivity.this.service);
               // navigate 실행
               navigate();
 
@@ -439,9 +448,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               for(int i=0; i<4; i++) {
                 instanceBuffer.get(i).clear();
               }
-
-              myGps.startGps(DetectorActivity.this.service);
-              //매칭 함수 돌리
             }
 
 
@@ -928,6 +934,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   public void announceInstance(){
+    // 버퍼
 
     // ...
   }
