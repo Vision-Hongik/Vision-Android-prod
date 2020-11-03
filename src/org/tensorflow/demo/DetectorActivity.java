@@ -135,6 +135,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap cropSignBitmap = null;
   private float bitmapWidth;
   private float bitmapHeight;
+  private int N = 5; // N * N 사분면
 
   private static final int BUFFERTIME = 3;
 
@@ -167,9 +168,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    for(int i=0; i<4; i++){
-      instanceBuffer.add(new Hashtable<Integer, Classifier.Recognition>());
-    }
+
+    // 5 * 5 분면의 InstanceBuffer 초기화
+    for(int i=0; i<N; i++)
+      for(int j=0; j<N; j++)
+        instanceBuffer.add(new Hashtable<Integer, Classifier.Recognition>());
+
 
     // GPS가 꺼져있다면 On Dialog
     createLocationRequest();
@@ -278,18 +282,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             lines.add("");
             lines.add("Instance Buffer");
             lines.add("");
-            for(int i=0; i<4; i++){
+            for(int i=0; i<N; i++){
+              for(int j=0; j<N; j++){
               boolean flag_buffer = false;
-              Set keySet = DetectorActivity.this.instanceBuffer.get(i).keySet();
+              int idx = (i*N) + j;
+              Set keySet = DetectorActivity.this.instanceBuffer.get(idx).keySet();
               Iterator iterKey = keySet.iterator();
-              String tmp = (i+1) +"사분면: ";
+              String tmp = i + " * " + j + " 분면: ";
               while(iterKey.hasNext()){
                 flag_buffer = true;
                 int nKey = (int) iterKey.next();
-                tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(i).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(i).get(nKey).getCount()+")";
+                tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getCount()+")";
               }
               if(flag_buffer)
                 lines.add(tmp);
+              }
             }
             lines.add("");
             lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
@@ -389,14 +396,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               //Log.e("result", "=========================offset? : " + result.toString());
               final RectF location = result.getLocation();
 
-              int flag;
-              float centorX = (location.left + location.right) / 2;
               float centorY = (location.bottom + location.top) / 2;
-              // 좌표를 기준으로 4개의 ImageSector로 구분
-              if (0 < centorX && centorX <= bitmapWidth / 2 && 0 < centorY && centorY <= bitmapHeight / 2) flag = 0;
-              else if(bitmapWidth / 2 < centorX && centorX <= bitmapWidth && 0 < centorY && centorY <= bitmapHeight / 2) flag = 1;
-              else if(0 < centorX && centorX <= bitmapWidth / 2 && bitmapHeight / 2 < centorY && centorY <= bitmapHeight) flag = 2;
-              else flag = 3;
+              float centorX = (location.left + location.right) / 2;
+              int yIdx = (int)centorY / ((int)bitmapHeight / N);
+              int xIdx = (int)centorX / ((int)bitmapWidth / N);
+
+              // 좌표를 기준으로 5 * 5 개의 ImageSector로 구분
+              int flag = yIdx * N + xIdx;
+              Log.e("flag", "flag? : " + flag + ", yIdx: " + yIdx + ", xIdx: " + xIdx);
+
 
               // Key값에 맞게 result 저장
               final int key = result.getIdx();
@@ -428,15 +436,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             // 2초 지날때마다 갱신
             if(DetectorActivity.this.lastProcessingTimeMs1 >= BUFFERTIME * 1000){
 
-              // buffer 담긴 Instance log 찍어보기
-              for(int i=0; i<4; i++){
-                Set keySet = instanceBuffer.get(i).keySet();
-                Iterator iterKey = keySet.iterator();
-                while(iterKey.hasNext()){
-                  int nKey = (int) iterKey.next();
-                  Log.e("key",  (i+1) + "사분면, value: " + instanceBuffer.get(i).get(nKey));
+              /*  buffer 담긴 Instance log 찍어보기
+              for(int i=0; i<N; i++){
+                for(int j=0; j<N; j++){
+                  int idx = (i*N) + j;
+                  Set keySet = instanceBuffer.get(idx).keySet();
+                  Iterator iterKey = keySet.iterator();
+                  String tmp = i + " * " + j + " 분면: ";
+                  while(iterKey.hasNext()){
+                    int nKey = (int) iterKey.next();
+
+                    Log.e("key",  tmp + instanceBuffer.get(idx).get(nKey));
+                  }
                 }
               }
+              */
 
               // GPS Update
               myGps.startGps(DetectorActivity.this.service);
@@ -445,8 +459,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
               // 초기화
               DetectorActivity.this.lastProcessingTimeMs1 = 0;
-              for(int i=0; i<4; i++) {
-                instanceBuffer.get(i).clear();
+              for(int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                  instanceBuffer.get(i * N + j).clear();
+                }
               }
             }
 
@@ -946,9 +962,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   public void navigate(){
-    announceInstance();
-    matchSector();
-    // ...
+    // matchSector();
+    for(int i=0; i<N; i++){
+      for(int j=0; j<N; j++){
+        int idx = (i*N) + j;
+        Set keySet = instanceBuffer.get(idx).keySet();
+        Iterator iterKey = keySet.iterator();
+        String tmp = i + " * " + j + " 분면: ";
+        while(iterKey.hasNext()){
+          int nKey = (int) iterKey.next();
+
+          Log.e("key",  tmp + instanceBuffer.get(idx).get(nKey));
+        }
+      }
+    }
+
+    //announceInstance();
   }
 
   // MapData를 서버로 부터 얻어서 Service 객체에 셋
