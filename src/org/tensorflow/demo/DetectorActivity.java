@@ -160,7 +160,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Voice voice;
   private Compass compass;
   private SOTWFormatter sotwFormatter;
-
+  private boolean dotFlag = false;
   private boolean yoloFirstStartFlag = false;
 
   public ArrayList< Hashtable<Integer, Classifier.Recognition>> instanceBuffer = new ArrayList<Hashtable<Integer, Classifier.Recognition>>();
@@ -259,63 +259,61 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         });
 
     addCallback(
-        new DrawCallback() {
-          @Override
-          public void drawCallback(final Canvas canvas) {
-            if (!isDebug()) {
-              return;
-            }
+            new DrawCallback() {
+              @Override
+              public void drawCallback(final Canvas canvas) {
+                if (!isDebug()) {
+                  return;
+                }
 
-            final Vector<String> lines = new Vector<String>();
+                final Vector<String> lines = new Vector<String>();
 
-            if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
-              lines.add(service.getSource_Station() + " Receive Map Data!");
-              lines.add("");
-              for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
-                lines.add("Sector" + i);
-                lines.add(" Name: " + service.getSectorArrayList().get(i).getName());
-                lines.add(" GPS: " + service.getSectorArrayList().get(i).getGPS());
+                if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
+                  lines.add(service.getSource_Station() + " Receive Map Data!");
+                  lines.add("");
+                  for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
+                    lines.add("Sector" + i);
+                    lines.add(" Name: " + service.getSectorArrayList().get(i).getName());
+                    lines.add(" GPS: " + service.getSectorArrayList().get(i).getGPS());
+                    lines.add("");
+                  }
+                }
+
                 lines.add("");
-              }
-            }
+                lines.add("Instance Buffer");
+                lines.add("");
+                for(int i=0; i<N; i++){
+                  for(int j=0; j<N; j++){
+                    boolean flag_buffer = false;
+                    int idx = (i*N) + j;
+                    Set keySet = DetectorActivity.this.instanceBuffer.get(idx).keySet();
+                    Iterator iterKey = keySet.iterator();
+                    String tmp = i + " * " + j + " 분면: ";
+                    while(iterKey.hasNext()){
+                      flag_buffer = true;
+                      int nKey = (int) iterKey.next();
+                      tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getCount()+")";
+                    }
+                    if(flag_buffer)
+                      lines.add(tmp);
+                  }
+                }
+                lines.add("");
+                lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
+                lines.add("");
+                lines.add("GPS");
+                lines.add(" Latitude: " + service.getLatitude());
+                lines.add(" Longitude: " + service.getLongitude());
+                lines.add("");
+                lines.add("Src Station: " + service.getSource_Station());
+                lines.add("Src Exit: " + service.getSource_Exit());
+                lines.add("Dst Station: " + service.getDest_Station());
+                lines.add("Dst Exit: " + service.getDest_Exit());
 
-            lines.add("");
-            lines.add("Instance Buffer");
-            lines.add("");
-            for(int i=0; i<N; i++){
-              for(int j=0; j<N; j++){
-              boolean flag_buffer = false;
-              int idx = (i*N) + j;
-              Set keySet = DetectorActivity.this.instanceBuffer.get(idx).keySet();
-              Iterator iterKey = keySet.iterator();
-              String tmp = i + " * " + j + " 분면: ";
-              while(iterKey.hasNext()){
-                flag_buffer = true;
-                int nKey = (int) iterKey.next();
-                tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getCount()+")";
+                borderedText.drawLines(canvas, 10, canvas.getHeight() - 100, lines);
               }
-              if(flag_buffer)
-                lines.add(tmp);
-              }
-            }
-            lines.add("");
-            lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
-            lines.add("");
-            lines.add("GPS");
-            lines.add(" Latitude: " + service.getLatitude());
-            lines.add(" Longitude: " + service.getLongitude());
-            lines.add("");
-            lines.add("Src Station: " + service.getSource_Station());
-            lines.add("Src Exit: " + service.getSource_Exit());
-            lines.add("Dst Station: " + service.getDest_Station());
-            lines.add("Dst Exit: " + service.getDest_Exit());
-
-
-            borderedText.drawLines(canvas, 10, canvas.getHeight() - 100, lines);
-          }
-        });
+            });
   }
-
 
   @Override
   protected void processImage() {
@@ -393,6 +391,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
 
             for (final Classifier.Recognition result : results) {
+              // dot block이 존재한다면 check
+              if(result.getIdx() == 0) dotFlag = true;
               //Log.e("result", "=========================offset? : " + result.toString());
               final RectF location = result.getLocation();
 
@@ -452,12 +452,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               }
               */
 
-              // GPS Update
-              myGps.startGps(DetectorActivity.this.service);
               // navigate 실행
               navigate();
 
               // 초기화
+              dotFlag = false;
               DetectorActivity.this.lastProcessingTimeMs1 = 0;
               for(int i = 0; i < N; i++) {
                 for (int j = 0; j < N; j++) {
@@ -465,7 +464,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 }
               }
             }
-
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
@@ -855,7 +853,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         service.setDest_Station(dstStationText);
         Log.e("v", "End Station onResults: " + service.getDest_Station());
 
-
         try {
           Thread.sleep(2000);
           voice.TTS("몇번 출구로 나가시나요?");
@@ -884,6 +881,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         stt_srcExit = mResult.get(0);
         srcExitNumber=recognizeExitNum(stt_srcExit); //모든 인식 경우에 대해 출구 결과값을 하나로 도출해냄.
         service.setSource_Exit(srcExitNumber);
+        service.setCurrent_Sector(srcExitNumber); // 현재 Sector로 입력
+
         Log.e("v", "Start Exit onResults: " + service.getSource_Exit() );
 
         try {
@@ -957,12 +956,18 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   public void matchSector(){
     // 현재 섹터 배정
-    // GPS 비교
+    int curSector = service.getCurrent_Sector();
+
+    // GPS Update후 비교
+    myGps.startGps(DetectorActivity.this.service);
+    service.getLatitude();
     //
   }
 
   public void navigate(){
-    // matchSector();
+    // dot block이 있다면 섹터 여부 확인
+    if(dotFlag) matchSector();
+
     for(int i=0; i<N; i++){
       for(int j=0; j<N; j++){
         int idx = (i*N) + j;

@@ -1,6 +1,7 @@
 package org.tensorflow.demo.vision_module;
 
 import java.util.ArrayList;
+import org.tensorflow.demo.vision_module.Sector;
 
 public class Service {
 
@@ -11,10 +12,12 @@ public class Service {
     private String dest_Station;
     private String dest_Exit;
     private float azimuth;
+    private Sector current_Sector;
 
     //private jsonObject Array
     private ArrayList<Sector> sectorArrayList;
     //instances data structure class;
+    private ArrayList<Sector> path;
 
     public Service(){
         this.sectorArrayList = new ArrayList<Sector>();
@@ -55,6 +58,17 @@ public class Service {
         // 방향물어보면 자이로. 최후의 수단 교수님이 욕을하면,,,,
     }
 
+    // 경로 설정
+    public void setPath(){
+        int Dest_Sector_Idx;
+        // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
+        if(this.getSource_Station() != this.getDest_Station())
+            Dest_Sector_Idx = 10;
+        else
+            Dest_Sector_Idx = Integer.parseInt(this.getDest_Exit());
+
+
+    }
 
     public void setLongitude(double longitude){
         this.longitude = longitude;
@@ -74,6 +88,9 @@ public class Service {
 
     public void setAzimuth(float azimuth) {this.azimuth = azimuth;}
 
+    // 만약 String으로 "1"(번 출구)이 전달되면 Current_Sector가 1번 Sector로 저장
+    public void setCurrent_Sector(String source_Exit) { this.current_Sector = this.getMapdataFromIdx(Integer.parseInt(source_Exit) - 1); }
+
     public double getLongitude(){
         return this.longitude;
     }
@@ -91,6 +108,8 @@ public class Service {
     public String getDest_Exit() {return this.dest_Exit;}
 
     public float getAzimuth() { return this.azimuth;}
+
+    public Sector getCurrent_Sector() { return this.current_Sector; }
 
     public void setSectorArrayList(ArrayList<Sector> mapList){
         this.sectorArrayList = mapList;
