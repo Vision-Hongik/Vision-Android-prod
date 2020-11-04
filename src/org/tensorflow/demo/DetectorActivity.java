@@ -1007,21 +1007,26 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         //log 확인.
         Log.e("h", "Number of Sector : " + DetectorActivity.this.service.getSectorArrayList().size());
-        for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
-          Log.e("h", "onResponse Name: " + service.getSectorArrayList().get(i).getName());
+
+        for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++) {
+          Log.e("DB", "onResponse Name: " + service.getSectorArrayList().get(i).getName());
           Log.e("h", "onResponse ID: " + service.getSectorArrayList().get(i).getId());
           Log.e("h", "onResponse type: " + service.getSectorArrayList().get(i).getType());
           Log.e("h", "onResponse dot: " + service.getSectorArrayList().get(i).getDot());
           Log.e("h", "onResponse Line: " + service.getSectorArrayList().get(i).getLine());
-          Log.e("h", "onResponse escalator: " + service.getSectorArrayList().get(i).getEscalator());
-          Log.e("h", "onResponse Stairs: " + service.getSectorArrayList().get(i).getStairs());
+          Log.e("h", "onResponse upEscalator: " + service.getSectorArrayList().get(i).getUpEscalator());
+          Log.e("h", "onResponse downEscalator: " + service.getSectorArrayList().get(i).getDownEscalator());
+          Log.e("h", "onResponse upStair: " + service.getSectorArrayList().get(i).getUpStair());
+          Log.e("h", "onResponse downStair: " + service.getSectorArrayList().get(i).getDownStair());
           Log.e("h", "onResponse Pillar: " + service.getSectorArrayList().get(i).getPillar());
-          Log.e("h", "onResponse signBoard: " + service.getSectorArrayList().get(i).getSignBoard());
-          Log.e("h", "onResponse Topboard: " + service.getSectorArrayList().get(i).getTopBoard());
+          Log.e("h", "onResponse Board: " + service.getSectorArrayList().get(i).getBoard());
+          Log.e("h", "onResponse upBoard: " + service.getSectorArrayList().get(i).getUpBoard());
           Log.e("h", "onResponse subwayTracks: " + service.getSectorArrayList().get(i).getSubwayTracks());
-          Log.e("h", "onResponse Exit: " + service.getSectorArrayList().get(i).getExit());
-          Log.e("h", "onResponse enterGate: " + service.getSectorArrayList().get(i).getEnterGate());
+          Log.e("h", "onResponse inSign: " + service.getSectorArrayList().get(i).getInSign());
+          Log.e("h", "onResponse outSign: " + service.getSectorArrayList().get(i).getOutSign());
+          Log.e("h", "onResponse Gate: " + service.getSectorArrayList().get(i).getGate());
           Log.e("h", "onResponse GPS: " + service.getSectorArrayList().get(i).getGPS() + "\n");
+          Log.e("h", "onResponse Adjacent Sectors: " + service.getSectorArrayList().get(i).getAdjacents() + "\n");
         }
         if(myCallback != null) myCallback.callback();
       } //onResponse
