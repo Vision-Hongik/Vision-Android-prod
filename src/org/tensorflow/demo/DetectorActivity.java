@@ -882,6 +882,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         srcExitNumber=recognizeExitNum(stt_srcExit); //모든 인식 경우에 대해 출구 결과값을 하나로 도출해냄.
         service.setSource_Exit(srcExitNumber);
         service.setCurrent_Sector(srcExitNumber); // 현재 Sector로 입력
+        service.setNext_Sector_Index(0);
 
         Log.e("v", "Start Exit onResults: " + service.getSource_Exit() );
 
@@ -956,8 +957,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   public void matchSector(){
     // 현재 섹터 배정
-    int curSector = service.getCurrent_Sector();
+    Sector curSector = service.getCurrent_Sector();
+    int nextSectorIdx = service.getNext_Sector_Index();
 
+    // path에서
+    service.get
     // GPS Update후 비교
     myGps.startGps(DetectorActivity.this.service);
     service.getLatitude();

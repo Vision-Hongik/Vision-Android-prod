@@ -13,6 +13,7 @@ public class Service {
     private String dest_Exit;
     private float azimuth;
     private Sector current_Sector;
+    private int next_Sector_Index;
 
     //private jsonObject Array
     private ArrayList<Sector> sectorArrayList;
@@ -31,6 +32,7 @@ public class Service {
         this.dest_Exit = dest_Exit;
         this.sectorArrayList = new ArrayList<Sector>();
     }
+
     public void startService(){
 
         // voice 출발지  -> 모르면 GPS 찾기  -> GPS랑 mapdata를 사용해서 찾는 함수 구현. 상수
@@ -58,14 +60,19 @@ public class Service {
         // 방향물어보면 자이로. 최후의 수단 교수님이 욕을하면,,,,
     }
 
+
+
     // 경로 설정
     public void setPath(){
+        int Source_Sector_Idx = Integer.parseInt(source_Exit);
         int Dest_Sector_Idx;
         // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
         if(this.getSource_Station() != this.getDest_Station())
             Dest_Sector_Idx = 10;
         else
             Dest_Sector_Idx = Integer.parseInt(this.getDest_Exit());
+
+        //this.sectorArrayList
 
 
     }
@@ -91,6 +98,9 @@ public class Service {
     // 만약 String으로 "1"(번 출구)이 전달되면 Current_Sector가 1번 Sector로 저장
     public void setCurrent_Sector(String source_Exit) { this.current_Sector = this.getMapdataFromIdx(Integer.parseInt(source_Exit) - 1); }
 
+    // 항상 0을 입력으로 받아 path에서 0부터 탐색하도록 함
+    public void setNext_Sector_Index(int next_Sector_Index) { this.next_Sector_Index = next_Sector_Index; }
+
     public double getLongitude(){
         return this.longitude;
     }
@@ -111,12 +121,18 @@ public class Service {
 
     public Sector getCurrent_Sector() { return this.current_Sector; }
 
+    public int getNext_Sector_Index() { return this.next_Sector_Index; }
+
     public void setSectorArrayList(ArrayList<Sector> mapList){
         this.sectorArrayList = mapList;
     }
 
+    public ArrayList<Sector> getPath() { return this.path; }
+
+    public Sector getNextSector(int idx) { return this.path.get(idx); }
+
     public void push_backMapdata(Sector md){
-        sectorArrayList.add(md);
+        this.sectorArrayList.add(md);
     }
 
     // 얕 복사본을 넘겨준다.은 .. -> Mapdata 클래스의 깊은 복사자를 만들어야되는데 귀찮다..ㅜ
@@ -127,6 +143,7 @@ public class Service {
     public Sector getMapdataFromIdx(int index){
         return this.sectorArrayList.get(index);
     }
+
 
 
 }
