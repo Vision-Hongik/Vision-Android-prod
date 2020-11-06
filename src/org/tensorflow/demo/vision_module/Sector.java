@@ -29,8 +29,8 @@ public class Sector {
     private Boolean sign;
     private Boolean gate; //개찰구
     private JSONObject gps; // [위도, 경도]
-    private JSONArray adjacents;
-
+    private JSONArray adjacent_idx;
+    private JSONArray adjacent_dir;
 
     public Sector(){
 
@@ -57,7 +57,8 @@ public class Sector {
             this.sign = job.getBoolean("sign");
             this.gate = job.getBoolean("gate");
             this.gps = job.getJSONObject("gps");
-            this.adjacents = job.getJSONArray("adjacents");
+            this.adjacent_idx = job.getJSONArray("adjacents_idx");
+            this.adjacent_dir = job.getJSONArray("adjacents_dir");
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -92,7 +93,8 @@ public class Sector {
     public void setSign(Boolean sign) {this.sign= sign;}
     public void setGate(Boolean gate) { this.gate=gate;}
     public void setGPS(JSONObject gps) { this.gps = gps; }
-    public void setAdjacents(JSONArray adjacents) { this.adjacents = adjacents; }
+    public void setAdjacentIdx(JSONArray adjacent_idx) { this.adjacent_idx = adjacent_idx; }
+    public void setAdjacentDir(JSONArray adjacent_dir) { this.adjacent_dir = adjacent_dir; }
 
 
     public String getId(){ return this.id;}
@@ -114,5 +116,6 @@ public class Sector {
     public Boolean getSign() {return this.sign;}
     public Boolean getGate() { return this.gate; }
     public JSONObject getGPS() { return this.gps;}
-    public JSONArray getAdjacents() { return this.adjacents;}
+    public JSONArray getAdjacentIdx() { return this.adjacent_idx;}
+    public JSONArray getAdjacentDir() { return this.adjacent_dir;}
 }
