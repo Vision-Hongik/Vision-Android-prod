@@ -21,7 +21,9 @@ public class InstanceBuffer  extends ArrayList<Hashtable<Integer, Recognition>> 
     public int getRow(){return this.row;}
     public int getCol(){return this.col;}
 
-    public
+    public Hashtable<Integer,Recognition> getMatIdx(int row,int col){
+        return this.get(row*this.row + col);
+    }
 
 
 }
