@@ -956,7 +956,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   public void matchSector(){
     // 현재 섹터 배정
-    int curSector = service.getCurrent_Sector();
+    Sector curSector = service.getCurrent_Sector();
 
     // GPS Update후 비교
     myGps.startGps(DetectorActivity.this.service);
