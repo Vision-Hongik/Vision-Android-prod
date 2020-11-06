@@ -455,7 +455,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               */
 
               // navigate 실행
-              navigate();
+              if(service != null && service.isReady()) navigate();
 
               // 초기화
               dotFlag = false;
@@ -990,6 +990,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   public void navigate(){
+
     // dot block이 있다면 섹터 여부 확인
     if(dotFlag) matchSector();
 
@@ -1002,7 +1003,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         while(iterKey.hasNext()){
           int nKey = (int) iterKey.next();
 
-          Log.e("key",  tmp + instanceBuffer.get(idx).get(nKey));
+          Log.e("NavigateLog",  tmp + instanceBuffer.get(idx).get(nKey));
         }
       }
     }
@@ -1123,6 +1124,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         public void callback() {
           Log.e("n", "Navigate 시작" );
           voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
+          service.setReadyFlag(true);
         }
 
         @Override

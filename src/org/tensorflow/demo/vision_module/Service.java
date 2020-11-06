@@ -1,5 +1,7 @@
 package org.tensorflow.demo.vision_module;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import org.tensorflow.demo.vision_module.Sector;
 
@@ -14,6 +16,7 @@ public class Service {
     private float azimuth;
     private Sector current_Sector;
     private int next_Sector_Index;
+    private boolean readyFlag;
 
     //private jsonObject Array
     private ArrayList<Sector> sectorArrayList;
@@ -142,6 +145,17 @@ public class Service {
 
     public Sector getMapdataFromIdx(int index){
         return this.sectorArrayList.get(index);
+    }
+
+    public void setReadyFlag(boolean flag) {this.readyFlag = flag;}
+
+    public boolean isReady(){
+        if(this.sectorArrayList.isEmpty()){
+            Log.e("service", "isReady: Sector Array is Empty" );
+            return false;
+        }
+
+        return this.readyFlag;
     }
 
 
