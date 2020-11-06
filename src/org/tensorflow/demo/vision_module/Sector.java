@@ -32,7 +32,6 @@ public class Sector {
     private JSONArray adjacent_idx;
     private JSONArray adjacent_dir;
 
-
     public Sector(){
 
     }

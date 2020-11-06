@@ -79,8 +79,10 @@ import org.tensorflow.demo.vision_module.SOTWFormatter;
 import org.tensorflow.demo.vision_module.Sector;
 import org.tensorflow.demo.vision_module.Service;
 import org.tensorflow.demo.vision_module.Voice;
+import org.tensorflow.demo.vision_module.senario;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -135,6 +137,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap cropSignBitmap = null;
   private float bitmapWidth;
   private float bitmapHeight;
+  private int N = 5; // N * N 사분면
 
   private static final int BUFFERTIME = 3;
 
@@ -159,17 +162,18 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Voice voice;
   private Compass compass;
   private SOTWFormatter sotwFormatter;
-
+  private boolean dotFlag = false;
   private boolean yoloFirstStartFlag = false;
 
-  public ArrayList< Hashtable<Integer, Classifier.Recognition>> instanceBuffer = new ArrayList<Hashtable<Integer, Classifier.Recognition>>();
+  public InstanceBuffer instanceBuffer = new InstanceBuffer();
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    for(int i=0; i<4; i++){
-      instanceBuffer.add(new Hashtable<Integer, Classifier.Recognition>());
-    }
+
+    // 5 * 5 분면의 InstanceBuffer 초기화
+    instanceBuffer = new InstanceBuffer(5,5);
+
 
     // GPS가 꺼져있다면 On Dialog
     createLocationRequest();
@@ -255,60 +259,61 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         });
 
     addCallback(
-        new DrawCallback() {
-          @Override
-          public void drawCallback(final Canvas canvas) {
-            if (!isDebug()) {
-              return;
-            }
+            new DrawCallback() {
+              @Override
+              public void drawCallback(final Canvas canvas) {
+                if (!isDebug()) {
+                  return;
+                }
 
-            final Vector<String> lines = new Vector<String>();
+                final Vector<String> lines = new Vector<String>();
 
-            if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
-              lines.add(service.getSource_Station() + " Receive Map Data!");
-              lines.add("");
-              for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
-                lines.add("Sector" + i);
-                lines.add(" Name: " + service.getSectorArrayList().get(i).getName());
-                lines.add(" GPS: " + service.getSectorArrayList().get(i).getGPS());
+                if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
+                  lines.add(service.getSource_Station() + " Receive Map Data!");
+                  lines.add("");
+                  for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
+                    lines.add("Sector" + i);
+                    lines.add(" Name: " + service.getSectorArrayList().get(i).getName());
+                    lines.add(" GPS: " + service.getSectorArrayList().get(i).getGPS());
+                    lines.add("");
+                  }
+                }
+
                 lines.add("");
+                lines.add("Instance Buffer");
+                lines.add("");
+                for(int i=0; i<N; i++){
+                  for(int j=0; j<N; j++){
+                    boolean flag_buffer = false;
+                    int idx = (i*N) + j;
+                    Set keySet = DetectorActivity.this.instanceBuffer.get(idx).keySet();
+                    Iterator iterKey = keySet.iterator();
+                    String tmp = i + " * " + j + " 분면: ";
+                    while(iterKey.hasNext()){
+                      flag_buffer = true;
+                      int nKey = (int) iterKey.next();
+                      tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getCount()+")";
+                    }
+                    if(flag_buffer)
+                      lines.add(tmp);
+                  }
+                }
+                lines.add("");
+                lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
+                lines.add("");
+                lines.add("GPS");
+                lines.add(" Latitude: " + service.getLatitude());
+                lines.add(" Longitude: " + service.getLongitude());
+                lines.add("");
+                lines.add("Src Station: " + service.getSource_Station());
+                lines.add("Src Exit: " + service.getSource_Exit());
+                lines.add("Dst Station: " + service.getDest_Station());
+                lines.add("Dst Exit: " + service.getDest_Exit());
+
+                borderedText.drawLines(canvas, 10, canvas.getHeight() - 100, lines);
               }
-            }
-
-            lines.add("");
-            lines.add("Instance Buffer");
-            lines.add("");
-            for(int i=0; i<4; i++){
-              boolean flag_buffer = false;
-              Set keySet = DetectorActivity.this.instanceBuffer.get(i).keySet();
-              Iterator iterKey = keySet.iterator();
-              String tmp = (i+1) +"사분면: ";
-              while(iterKey.hasNext()){
-                flag_buffer = true;
-                int nKey = (int) iterKey.next();
-                tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(i).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(i).get(nKey).getCount()+")";
-              }
-              if(flag_buffer)
-                lines.add(tmp);
-            }
-            lines.add("");
-            lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
-            lines.add("");
-            lines.add("GPS");
-            lines.add(" Latitude: " + service.getLatitude());
-            lines.add(" Longitude: " + service.getLongitude());
-            lines.add("");
-            lines.add("Src Station: " + service.getSource_Station());
-            lines.add("Src Exit: " + service.getSource_Exit());
-            lines.add("Dst Station: " + service.getDest_Station());
-            lines.add("Dst Exit: " + service.getDest_Exit());
-
-
-            borderedText.drawLines(canvas, 10, canvas.getHeight() - 100, lines);
-          }
-        });
+            });
   }
-
 
   @Override
   protected void processImage() {
@@ -386,17 +391,20 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
 
             for (final Classifier.Recognition result : results) {
+              // dot block이 존재한다면 check
+              if(result.getIdx() == 0) dotFlag = true;
               //Log.e("result", "=========================offset? : " + result.toString());
               final RectF location = result.getLocation();
 
-              int flag;
-              float centorX = (location.left + location.right) / 2;
               float centorY = (location.bottom + location.top) / 2;
-              // 좌표를 기준으로 4개의 ImageSector로 구분
-              if (0 < centorX && centorX <= bitmapWidth / 2 && 0 < centorY && centorY <= bitmapHeight / 2) flag = 0;
-              else if(bitmapWidth / 2 < centorX && centorX <= bitmapWidth && 0 < centorY && centorY <= bitmapHeight / 2) flag = 1;
-              else if(0 < centorX && centorX <= bitmapWidth / 2 && bitmapHeight / 2 < centorY && centorY <= bitmapHeight) flag = 2;
-              else flag = 3;
+              float centorX = (location.left + location.right) / 2;
+              int yIdx = (int)centorY / ((int)bitmapHeight / N);
+              int xIdx = (int)centorX / ((int)bitmapWidth / N);
+
+              // 좌표를 기준으로 5 * 5 개의 ImageSector로 구분
+              int flag = yIdx * N + xIdx;
+              Log.e("flag", "flag? : " + flag + ", yIdx: " + yIdx + ", xIdx: " + xIdx);
+
 
               // Key값에 맞게 result 저장
               final int key = result.getIdx();
@@ -428,28 +436,34 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             // 2초 지날때마다 갱신
             if(DetectorActivity.this.lastProcessingTimeMs1 >= BUFFERTIME * 1000){
 
-              // buffer 담긴 Instance log 찍어보기
-              for(int i=0; i<4; i++){
-                Set keySet = instanceBuffer.get(i).keySet();
-                Iterator iterKey = keySet.iterator();
-                while(iterKey.hasNext()){
-                  int nKey = (int) iterKey.next();
-                  Log.e("key",  (i+1) + "사분면, value: " + instanceBuffer.get(i).get(nKey));
+              /*  buffer 담긴 Instance log 찍어보기
+              for(int i=0; i<N; i++){
+                for(int j=0; j<N; j++){
+                  int idx = (i*N) + j;
+                  Set keySet = instanceBuffer.get(idx).keySet();
+                  Iterator iterKey = keySet.iterator();
+                  String tmp = i + " * " + j + " 분면: ";
+                  while(iterKey.hasNext()){
+                    int nKey = (int) iterKey.next();
+
+                    Log.e("key",  tmp + instanceBuffer.get(idx).get(nKey));
+                  }
                 }
               }
+              */
 
-              // GPS Update
-              myGps.startGps(DetectorActivity.this.service);
               // navigate 실행
-              navigate();
+              if(service != null && service.isReady()) navigate();
 
               // 초기화
+              dotFlag = false;
               DetectorActivity.this.lastProcessingTimeMs1 = 0;
-              for(int i=0; i<4; i++) {
-                instanceBuffer.get(i).clear();
+              for(int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                  instanceBuffer.get(i * N + j).clear();
+                }
               }
             }
-
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
@@ -534,7 +548,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void onError(int i) {
-        voice.TTS("음성 에러. 5초후 다시 말씀해주세요!");
+        voice.TTS("음성 에러. 다시 눌러주세요");
         String message;
 
         switch (i) {
@@ -730,9 +744,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         return exitNum;
     };
 
+  private int initCompletedStatus = 0;
 
   // 서비스에 필요한 변수들을 초기화한 후, 안내 시작 함수!
-  public void initService(final MyCallback myCallback){
+  public void initService(int status,final MyCallback myCallback){
 
     final RecognitionListener sourceStationVoiceListener;
     final RecognitionListener destStationVoiceListener;
@@ -758,14 +773,19 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         try {
           Thread.sleep(2000);
-          if(answer.charAt(0) != '네' && answer.charAt(0) != '내'){
+
+          if(answer.charAt(0) == '아' && answer.charAt(1) == '니') DetectorActivity.this.initCompletedStatus = 0;
+
+          else if(answer.charAt(0) != '네' && answer.charAt(0) != '내'){
             // 출발지, 도착지가 제대로 체크되지 않았다면, 함수 다시 시작!
             voice.TTS("다시 버튼을 눌러주세요.");
           }
+
           else{
             //제대로 체크됬다면 확정짓고 출발역의 맵데이터를 가져온다.
             Log.e("v", "Result src & dst: "+ service.getSource_Station() + " " + service.getDest_Station());
 
+            DetectorActivity.this.initCompletedStatus = 0;
             // ~~~~
 
             // 맵데이터를 서비스에 셋팅을 완료한 후 navigate를 실행하기 위해, callback 함수를 통해 사용한다.
@@ -788,7 +808,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       }
     });
 
-    // 도착 출구 물어보는 리스너
+    // 도착 출구 리스너
     destExitVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
       public void callback() {
@@ -797,20 +817,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "",stt_dstExit="", dstExitNumber="";
+        String key = "",stt_dstExit="";
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
         stt_dstExit = mResult.get(0);
-        dstExitNumber=recognizeExitNum(stt_dstExit);
-        service.setDest_Exit(dstExitNumber);
+        service.setDest_Exit(stt_dstExit);
         Log.e("v", "Destination Exit onResults: " + service.getDest_Exit());
 
+        DetectorActivity.this.initCompletedStatus = 4;
+
         try {
-          Thread.sleep(2000);
+          Thread.sleep(1000);
           voice.TTS(service.getSource_Station() + "역 " + service.getSource_Exit() + "번 출구, 에서 출발, "  +
                   service.getDest_Station() + "역 " + service.getDest_Exit() + "번 출구, 도착이 맞습니까? 네, 아니요로 대답해주세요.");
           voice.setRecognitionListener(confirmVoiceListener);
-          Thread.sleep(7000);
+          Thread.sleep(8200);
           voice.STT();
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -818,7 +839,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       }
     });
 
-    // 도착지 물어보는 리스너
+    // 도착역 리스너
     destStationVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
       public void callback() {
@@ -828,21 +849,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       @Override
       public void callbackBundle(Bundle results) {
 
-        String key = "", stt_dstStation = "", dstStationText= "";
+        String key = "", stt_dstStation = "";
 
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
         stt_dstStation = mResult.get(0);
         Log.e("stt_dstStation", stt_dstStation ); //입력값 자체를 로그 찍어보기
 
-        dstStationText = recognizeStation(stt_dstStation);
-        service.setDest_Station(dstStationText);
+        service.setDest_Station(stt_dstStation);
         Log.e("v", "End Station onResults: " + service.getDest_Station());
 
+        DetectorActivity.this.initCompletedStatus = 3;
 
         try {
           Thread.sleep(2000);
-          voice.TTS("몇번 출구로 나가시나요?");
+          voice.TTS(senario.destExitString);
           voice.setRecognitionListener(destExitVoiceListener);
           Thread.sleep(2000);
           voice.STT();
@@ -852,7 +873,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       }
     });
 
-    // 출발 출구 물어보는 리스너
+    // 출발 출구 리스너
     sourceExitVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
       public void callback() {
@@ -861,21 +882,25 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "", stt_srcExit="", srcExitNumber="";
+        String key = "", stt_srcExit="";
 
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
-        stt_srcExit = mResult.get(0);
-        srcExitNumber=recognizeExitNum(stt_srcExit); //모든 인식 경우에 대해 출구 결과값을 하나로 도출해냄.
-        service.setSource_Exit(srcExitNumber);
+        stt_srcExit = mResult.get(0);; //모든 인식 경우에 대해 출구 결과값을 하나로 도출해냄.
+        service.setSource_Exit(stt_srcExit);
+//        service.setCurrent_Sector(srcExitNumber); // 현재 Sector로 입력
+//        service.setNext_Sector_Index(0);
+
         Log.e("v", "Start Exit onResults: " + service.getSource_Exit() );
+
+        DetectorActivity.this.initCompletedStatus = 2;
 
         try {
           Thread.sleep(2000);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
-        voice.TTS("어디 역으로 가시나요?");
+        voice.TTS(senario.destStationString);
         voice.setRecognitionListener(destStationVoiceListener);
         try {
           Thread.sleep(2000);
@@ -886,7 +911,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       }
     });
 
-    // 출발지 물어보는 리스너
+    // 출발역 리스너
     sourceStationVoiceListener = getRecognitionListner(new MyCallback() {
       @Override
       public void callback() {
@@ -894,23 +919,23 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
       @Override
       public void callbackBundle(Bundle results) {
-        String key = "", stt_srcStation = "", srcStationText= "";
+        String key = "", stt_srcStation = "";
 
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
         stt_srcStation = mResult.get(0); //입력받은 단어를 새로운 변수 stt_srcStation에 담음
-        Log.e("stt_srcStation", stt_srcStation ); //입력값 자체를 로그 찍어보기
 
-        srcStationText = recognizeStation(stt_srcStation); //stt_srcStation을 파싱하여 출구 숫자값만 파악하게끔 함
-        service.setSource_Station(srcStationText);
+        service.setSource_Station(stt_srcStation);
         Log.e("v", "Start Station onResults: " + service.getSource_Station() ); //입력값 파싱 후 역 이름 로그 찍어보기
+
+        DetectorActivity.this.initCompletedStatus = 1;
 
         try {
           Thread.sleep(2000);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
-        voice.TTS("몇번 출구에서 출발 하시나요?");
+        voice.TTS(senario.startExitString);
         voice.setRecognitionListener(sourceExitVoiceListener);
         try {
           Thread.sleep(2000);
@@ -920,13 +945,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         voice.STT();
       }
     });
+    ArrayList<RecognitionListener> ListenerArray = new ArrayList<RecognitionListener>(Arrays.asList(sourceStationVoiceListener, sourceExitVoiceListener,
+            destStationVoiceListener,destExitVoiceListener, confirmVoiceListener));
 
 
     // init 시작
-    voice.TTS("어디 역에서 출발 하시나요?");
-    voice.setRecognitionListener(sourceStationVoiceListener);
-    try {
-      Thread.sleep(2000);
+    try{
+      voice.setRecognitionListener(ListenerArray.get(status));
+      if(status == 4) {voice.TTS(service.getSource_Station() + "역 " + service.getSource_Exit() + "번 출구, 에서 출발, "  +
+              service.getDest_Station() + "역 " + service.getDest_Exit() + "번 출구, 도착이 맞습니까? 네, 아니요로 대답해주세요.");
+        Thread.sleep(8200);
+      }
+      else {
+        voice.TTS(senario.getI(status));
+        Thread.sleep(2500);
+      }
+
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -941,14 +975,38 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   public void matchSector(){
     // 현재 섹터 배정
-    // GPS 비교
+    Sector curSector = service.getCurrent_Sector();
+
+    int nextSectorIdx = service.getNext_Sector_Index();
+
+    // path에서
+    //service.get
+    // GPS Update후 비교
+    myGps.startGps(DetectorActivity.this.service);
+    service.getLatitude();
     //
   }
 
   public void navigate(){
-    announceInstance();
-    matchSector();
-    // ...
+
+    // dot block이 있다면 섹터 여부 확인
+    if(dotFlag) matchSector();
+
+    for(int i=0; i<N; i++){
+      for(int j=0; j<N; j++){
+        int idx = (i*N) + j;
+        Set keySet = instanceBuffer.get(idx).keySet();
+        Iterator iterKey = keySet.iterator();
+        String tmp = i + " * " + j + " 분면: ";
+        while(iterKey.hasNext()){
+          int nKey = (int) iterKey.next();
+
+          Log.e("NavigateLog",  tmp + instanceBuffer.get(idx).get(nKey));
+        }
+      }
+    }
+
+    //announceInstance();
   }
 
   // MapData를 서버로 부터 얻어서 Service 객체에 셋
@@ -994,7 +1052,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           Log.e("DB", "onResponse GPS: " + service.getSectorArrayList().get(i).getGPS() + "\n");
           Log.e("DB", "onResponse 이웃섹터 idx: " + service.getSectorArrayList().get(i).getAdjacentIdx() + "\n");
           Log.e("DB", "onResponse 이웃섹터 direction: " + service.getSectorArrayList().get(i).getAdjacentDir() + "\n");
-
         }
         if(myCallback != null) myCallback.callback();
       } //onResponse
@@ -1061,11 +1118,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //      });
 
       //서비스를 위한 초기화 작업 시작
-      initService(new MyCallback() {
+      initService(initCompletedStatus, new MyCallback() {
         @Override
         public void callback() {
           Log.e("n", "Navigate 시작" );
           voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
+          service.setReadyFlag(true);
         }
 
         @Override
