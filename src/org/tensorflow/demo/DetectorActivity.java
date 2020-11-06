@@ -165,16 +165,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private boolean dotFlag = false;
   private boolean yoloFirstStartFlag = false;
 
-  public ArrayList< Hashtable<Integer, Classifier.Recognition>> instanceBuffer = new ArrayList<Hashtable<Integer, Classifier.Recognition>>();
+  public InstanceBuffer instanceBuffer = new InstanceBuffer();
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     // 5 * 5 분면의 InstanceBuffer 초기화
-    for(int i=0; i<N; i++)
-      for(int j=0; j<N; j++)
-        instanceBuffer.add(new Hashtable<Integer, Classifier.Recognition>());
+    instanceBuffer = new InstanceBuffer(5,5);
 
 
     // GPS가 꺼져있다면 On Dialog
