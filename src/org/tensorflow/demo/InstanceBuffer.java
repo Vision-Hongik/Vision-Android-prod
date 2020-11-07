@@ -30,5 +30,11 @@ public class InstanceBuffer  extends ArrayList<Hashtable<Integer, Recognition>> 
         return this.get(row*this.row + col);
     }
 
+    public void instanceClear(){
+        for(int i=0; i< this.row*this.col; i++){
+            this.get(i).clear();
+        }
+    }
+
 
 }

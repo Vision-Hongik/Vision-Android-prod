@@ -452,17 +452,18 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               }
               */
 
-              // navigate 실행
+              // navigate 실행, service is ready는 맵데이터를 받아 왔을때 부터 Ture된다.
               if(service != null && service.isReady()) navigate();
 
               // 초기화
               dotFlag = false;
               DetectorActivity.this.lastProcessingTimeMs1 = 0;
-              for(int i = 0; i < N; i++) {
-                for (int j = 0; j < N; j++) {
-                  instanceBuffer.get(i * N + j).clear();
-                }
-              }
+//              for(int i = 0; i < N; i++) {
+//                for (int j = 0; j < N; j++) {
+//                  instanceBuffer.get(i * N + j).clear();
+//                }
+//              }
+              instanceBuffer.instanceClear();
             }
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
@@ -1005,6 +1006,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
       }
     }
+
+    //
+
 
     //announceInstance();
   }
