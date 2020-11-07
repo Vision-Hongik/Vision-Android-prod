@@ -990,9 +990,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   public void navigate(){
 
-    // dot block이 있다면 섹터 여부 확인
-    if(dotFlag) matchSector();
-
     for(int i=0; i<N; i++){
       for(int j=0; j<N; j++){
         int idx = (i*N) + j;
@@ -1007,10 +1004,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       }
     }
 
-    //
+    // 각 스텝은 몇초마다 실행될지도 정해야할듯?
+    // 전부 3초마다 매번 실행되면 앱이 너무 시끄러울듯!
 
+    // announceInstance();
+    // OCR send();
 
-    //announceInstance();
+    // dot block이 있다면 섹터 여부 확인
+    if(dotFlag) matchSector();
   }
 
   // MapData를 서버로 부터 얻어서 Service 객체에 셋
