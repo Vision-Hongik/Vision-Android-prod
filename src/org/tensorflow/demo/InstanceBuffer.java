@@ -13,8 +13,13 @@ public class InstanceBuffer  extends ArrayList<Hashtable<Integer, Recognition>> 
     public InstanceBuffer(){
         super();
     }
-    public InstanceBuffer(int row, int col){
-        super(row*col);
+
+    public void initMat(int row, int col){
+        this.ensureCapacity(row*col);
+
+        for(int i=0; i < row*col; i++)
+            this.add(new Hashtable<Integer,Recognition>());
+
         this.row = row;
         this.col = col;
     }

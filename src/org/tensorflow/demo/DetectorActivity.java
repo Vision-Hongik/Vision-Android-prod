@@ -172,7 +172,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     super.onCreate(savedInstanceState);
 
     // 5 * 5 분면의 InstanceBuffer 초기화
-    instanceBuffer = new InstanceBuffer(5,5);
+    instanceBuffer.initMat(5,5);
 
 
     // GPS가 꺼져있다면 On Dialog
