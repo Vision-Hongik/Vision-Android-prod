@@ -23,7 +23,8 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     @Override
     public boolean add(InstanceHashTable instanceHashTable) {
         if(this.size() == maxSize) this.removeFirst();
-        syncInstanceBetweenPreNCur(this.getLast(),instanceHashTable);
+        if(!this.isEmpty())
+            syncInstanceBetweenPreNCur(this.getLast(),instanceHashTable);
         return super.add(instanceHashTable);
     }
 
