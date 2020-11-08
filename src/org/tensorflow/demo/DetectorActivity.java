@@ -394,6 +394,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               DetectorActivity.this.cropSignBitmap = cropBitmap(croppedBitmap,cslocation);
             }
 
+//--------------------------------------Instance Time Buffer 추가 -----------------------------------
+
             // Instance의 클래스 별로 Table 생성, 각 키별로 ArrayList..
             InstanceHashTable curTimeInstance = new InstanceHashTable(bitmapWidth,bitmapHeight);
             // 현재 발견된 instance를 Table화
@@ -402,6 +404,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
             // instanceTimeBuffer는 자동으로 최대 사이즈(getMaxSize)를 유지한다.
             instanceTimeBuffer.add(curTimeInstance);
+//----------------------------------------------------------------------------------------
 
             for (final Classifier.Recognition result : results) {
               // dot block이 존재한다면 check
