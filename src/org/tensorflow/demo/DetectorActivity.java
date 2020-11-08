@@ -71,6 +71,8 @@ import org.tensorflow.demo.env.ImageUtils;
 import org.tensorflow.demo.env.Logger;
 import org.tensorflow.demo.tracking.MultiBoxTracker;
 import org.tensorflow.demo.vision_module.Compass;
+import org.tensorflow.demo.vision_module.InstanceHashTable;
+import org.tensorflow.demo.vision_module.InstanceTimeBuffer;
 import org.tensorflow.demo.vision_module.MyCallback;
 import org.tensorflow.demo.vision_module.MapRequest;
 import org.tensorflow.demo.vision_module.MyGps;
@@ -80,6 +82,7 @@ import org.tensorflow.demo.vision_module.Sector;
 import org.tensorflow.demo.vision_module.Service;
 import org.tensorflow.demo.vision_module.Voice;
 import org.tensorflow.demo.vision_module.senario;
+import org.w3c.dom.Element;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,6 +169,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private boolean yoloFirstStartFlag = false;
 
   public InstanceBuffer instanceBuffer = new InstanceBuffer();
+  public InstanceTimeBuffer instanceTimeBuffer = new InstanceTimeBuffer();
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
@@ -389,6 +393,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               RectF cslocation = results.get(0).getLocation();
               DetectorActivity.this.cropSignBitmap = cropBitmap(croppedBitmap,cslocation);
             }
+
+            // Instance의 클래스 별로 Table 생성, 각 키별로 ArrayList..
+            InstanceHashTable curTimeInstance = new InstanceHashTable(bitmapWidth,bitmapHeight);
+            // 현재 발견된 instance를 Table화
+            for(final Classifier.Recognition result : results){
+              curTimeInstance.putRecog(result);
+            }
+            // instanceTimeBuffer는 자동으로 최대 사이즈(getMaxSize)를 유지한다.
+            instanceTimeBuffer.add(curTimeInstance);
 
             for (final Classifier.Recognition result : results) {
               // dot block이 존재한다면 check

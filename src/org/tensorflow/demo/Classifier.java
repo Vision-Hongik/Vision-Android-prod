@@ -31,7 +31,7 @@ public interface Classifier {
      * A unique identifier for what has been recognized. Specific to the class, not the instance of
      * the object.
      */
-    private final String id;
+    private String id;
 
     /**
      * Display index for the recognition.
@@ -52,6 +52,8 @@ public interface Classifier {
     private RectF location;
 
     private int count;
+    private boolean announced;
+    private int timeStamp;
 
     public Recognition(
         final String id, final int idx, final String title, final Float confidence, final RectF location) {
@@ -61,9 +63,13 @@ public interface Classifier {
       this.confidence = confidence;   /** 정확도 0~1 */
       this.location = location;       /** leftTop, rightBottom 좌표 */
       this.count = 0;
+      announced = false;
+      timeStamp = 0;
     }
 
     public String getId() { return id; }
+
+    public void setId(String id){this.id = id;}
 
     public int getIdx() { return idx; }
 
@@ -78,6 +84,22 @@ public interface Classifier {
     public int getCount() { return count; }
 
     public void setCount(int count) { this.count = count; }
+
+    public int getTimeStamp() {
+      return timeStamp;
+    }
+
+    public void setTimeStamp(int timeStamp) {
+      this.timeStamp = timeStamp;
+    }
+
+    public boolean isAnnounced() {
+      return announced;
+    }
+
+    public void setAnnounced(boolean announced) {
+      this.announced = announced;
+    }
 
     @Override
     public String toString() {

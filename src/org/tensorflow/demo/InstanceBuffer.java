@@ -10,6 +10,7 @@ public class InstanceBuffer  extends ArrayList<Hashtable<Integer, Recognition>> 
     private int row;
     private int col;
 
+
     public InstanceBuffer(){
         super();
     }
@@ -34,6 +35,15 @@ public class InstanceBuffer  extends ArrayList<Hashtable<Integer, Recognition>> 
         for(int i=0; i< this.row*this.col; i++){
             this.get(i).clear();
         }
+    }
+
+    public void announceInstance(){
+        for(int row =0; row < this.row; row++){
+            for(int col = 0; col < this.col; col++){
+
+            }
+        }
+
     }
 
 
