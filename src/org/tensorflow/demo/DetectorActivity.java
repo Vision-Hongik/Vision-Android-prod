@@ -1011,10 +1011,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     for(int i=1; i <= service.getSectorArrayListSize(); i++){
       final double lat = service.getMapdataFromIdx(i).getGPS().getDouble("latitude");
       final double lon = service.getMapdataFromIdx(i).getGPS().getDouble("longitude");
-      double d = (service.getLatitude()-lat) * (service.getLatitude()-lat) + (service.getLongitude()-lon) * (service.getLongitude()-lon);
-      if(d < min){
-        min = d;
-        idx = i;
+      double dist = (service.getLatitude()-lat) * (service.getLatitude()-lat) + (service.getLongitude()-lon) * (service.getLongitude()-lon);
+      if(dist < min){
+        min = dist; // min값 변경
+        idx = i; // 가장 가까운 위치의 Sector 번호 저장
       }
     }
 
