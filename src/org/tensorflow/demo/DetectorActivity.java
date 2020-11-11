@@ -1005,7 +1005,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // GPS Update후 비교
     myGps.startGps(DetectorActivity.this.service);
 
-    Sector sec = new Sector();
     // 현 Gps와 가장 가까운 sector 찾기
     double min = 1.0;
     int idx = 0;
