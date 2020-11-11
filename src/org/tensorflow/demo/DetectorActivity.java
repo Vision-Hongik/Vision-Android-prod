@@ -165,6 +165,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Voice voice;
   private Compass compass;
   private SOTWFormatter sotwFormatter;
+  private Sector curSector = new Sector(false);
   private boolean dotFlag = false;
   private boolean yoloFirstStartFlag = false;
 
@@ -409,6 +410,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             for (final Classifier.Recognition result : results) {
               // dot block이 존재한다면 check
               if(result.getIdx() == 0) dotFlag = true;
+              curSector.setCurSector(result.getIdx());
+
               //Log.e("result", "=========================offset? : " + result.toString());
               final RectF location = result.getLocation();
 
@@ -473,6 +476,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
               // 초기화
               dotFlag = false;
+              curSector.reset();
               DetectorActivity.this.lastProcessingTimeMs1 = 0;
 //              for(int i = 0; i < N; i++) {
 //                for (int j = 0; j < N; j++) {
@@ -990,21 +994,49 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // ...
   }
 
-  public void matchSector(){
-    // 현재 섹터 배정
-    Sector curSector = service.getCurrent_Sector();
+  private double dist(double latitude, double longitude, JSONObject gps) throws JSONException {
+      final double lat = gps.getDouble("latitude");
+      final double lon = gps.getDouble("longitude");
 
-    int nextSectorIdx = service.getNext_Sector_Index();
-
-    // path에서
-    //service.get
-    // GPS Update후 비교
-    myGps.startGps(DetectorActivity.this.service);
-    service.getLatitude();
-    //
+      return (latitude-lat) * (latitude-lat) + (longitude-lon) * (longitude-lon);
   }
 
-  public void navigate(){
+  public int matchSector() throws JSONException {
+    // GPS Update후 비교
+    myGps.startGps(DetectorActivity.this.service);
+
+    Sector sec = new Sector();
+    // 현 Gps와 가장 가까운 sector 찾기
+    double min = 1.0;
+    int idx = 0;
+    for(int i=1; i <= service.getSectorArrayListSize(); i++){
+      final double lat = service.getMapdataFromIdx(i).getGPS().getDouble("latitude");
+      final double lon = service.getMapdataFromIdx(i).getGPS().getDouble("longitude");
+      double d = (service.getLatitude()-lat) * (service.getLatitude()-lat) + (service.getLongitude()-lon) * (service.getLongitude()-lon);
+      if(d < min){
+        min = d;
+        idx = i;
+      }
+    }
+
+    // 가까운 Sector와 Path에서 nextSector의 번호 비교
+    if(service.getMapdataFromIdx(idx).getIndex() == service.getCurrent_Sector().getIndex()){
+      // 같다면 Instance 비교, 개수 반환
+      int num = service.comp(service.getMapdataFromIdx(idx), service.getCurrent_Sector());
+
+      /**7개 이상이라면 매칭 -> 실험적으로 변경 */
+      if(num >= 7){
+        // curSector 한칸 전진했을 때 목적지에 도착한 경우
+        if(service.setCurrent_Sector_Next()) return 2;
+        // 매칭만 된 경우
+        return 1;
+      }
+    }
+    // 매칭 안된 경우
+    return 0;
+  }
+
+  public void navigate() throws JSONException {
 
     for(int i=0; i<N; i++){
       for(int j=0; j<N; j++){
@@ -1027,7 +1059,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // OCR send();
 
     // dot block이 있다면 섹터 여부 확인
-    if(dotFlag) matchSector();
+    // 목적지 도착 2반환, 매칭만 된 경우 1반환, 매칭 안된 경우 0반환
+    int flag;
+    if(dotFlag) flag = matchSector();
   }
 
   // MapData를 서버로 부터 얻어서 Service 객체에 셋
@@ -1049,6 +1083,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
 
         DetectorActivity.this.service.setSectorArrayList(tmpMapdataList);
+
+        // 경로 설정
+        DetectorActivity.this.service.setPath();
 
         //log 확인.
         Log.e("h", "Number of Sector : " + DetectorActivity.this.service.getSectorArrayList().size());

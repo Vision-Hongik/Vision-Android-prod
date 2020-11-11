@@ -35,6 +35,21 @@ public class Sector {
     public Sector(){
 
     }
+    public Sector(boolean init){
+        this.dot = init;
+        this.line = init;
+        this.upEscalator = init;
+        this.downEscalator = init;
+        this.upStair = init;
+        this.downStair = init;
+        this.pillar = init;
+        this.board = init;
+        this.upBoard = init;
+        this.inSign = init;
+        this.outSign = init;
+        this.sign = init;
+        this.gate = init;
+    }
 
     public Sector(JSONObject job){
         try {
@@ -118,4 +133,68 @@ public class Sector {
     public JSONObject getGPS() { return this.gps;}
     public JSONArray getAdjacentIdx() { return this.adjacent_idx;}
     public JSONArray getAdjacentDir() { return this.adjacent_dir;}
+
+    public void setCurSector(int idx) {
+        switch (idx){
+            case 0:
+                this.setDot(true);
+                break;
+            case 1:
+                this.setLine(true);
+                break;
+            case 3:
+                this.setUpEscalator(true);
+                break;
+            case 4:
+                this.setDownEscalator(true);
+                break;
+            case 5:
+                this.setUpStair(true);
+                break;
+            case 6:
+                this.setDownStair(true);
+                break;
+            case 7:
+                this.setPillar(true);
+                break;
+            case 8:
+                this.setBoard(true);
+                break;
+            case 9:
+                this.setUpBoard(true);
+                break;
+            case 10:
+                this.setInSign(true);
+                break;
+            case 11:
+                this.setOutSign(true);
+                break;
+            case 12:
+                this.setSign(true);
+                break;
+            case 13:
+                this.setGate(true);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void reset(){
+        final boolean init = false;
+        this.dot = init;
+        this.line = init;
+        this.upEscalator = init;
+        this.downEscalator = init;
+        this.upStair = init;
+        this.downStair = init;
+        this.pillar = init;
+        this.board = init;
+        this.upBoard = init;
+        this.inSign = init;
+        this.outSign = init;
+        this.sign = init;
+        this.gate = init;
+    }
+
 }

@@ -3,7 +3,8 @@ package org.tensorflow.demo.vision_module;
 import android.util.Log;
 
 import java.util.ArrayList;
-import org.tensorflow.demo.vision_module.Sector;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Service {
 
@@ -15,17 +16,13 @@ public class Service {
     private String dest_Exit;
     private float azimuth;
     private Sector current_Sector;
-    private int next_Sector_Index;
+    private int sectorArraySize;
     private boolean readyFlag;
 
     //private jsonObject Array
     private ArrayList<Sector> sectorArrayList;
     //instances data structure class;
     private ArrayList<Sector> path;
-
-    public Service(){
-        this.sectorArrayList = new ArrayList<Sector>();
-    }
 
     public Service(String source_Station, String source_Exit, String dest_Station, String dest_Exit){
         // if 출발지점이 null 이라면, 알아서 계산한다.
@@ -67,17 +64,25 @@ public class Service {
 
     // 경로 설정
     public void setPath(){
-        int Source_Sector_Idx = Integer.parseInt(source_Exit);
-        int Dest_Sector_Idx;
-        // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
-        if(this.getSource_Station() != this.getDest_Station())
-            Dest_Sector_Idx = 10;
-        else
-            Dest_Sector_Idx = Integer.parseInt(this.getDest_Exit());
+//        int Source_Sector_Idx = Integer.parseInt(source_Exit);
+//        int Dest_Sector_Idx;
+//        // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
+//        if(this.getSource_Station() != this.getDest_Station())
+//            Dest_Sector_Idx = 10;
+//        else
+//            Dest_Sector_Idx = Integer.parseInt(this.getDest_Exit());
 
         //this.sectorArrayList
 
+        // 소현이가 구현하기 전까지 스태틱으로 하겠슴니더..
+        this.path.add(this.getMapdataFromIdx(2) ); // 시작 출구
+        this.path.add(this.getMapdataFromIdx(5) );
+        this.path.add(this.getMapdataFromIdx(7) );
+        this.path.add(this.getMapdataFromIdx(8) );
+        this.path.add(this.getMapdataFromIdx(9) );
+        this.path.add(this.getMapdataFromIdx(10) ); // 탑승장
 
+        this.setCurrent_Sector(1); // 현재 Sector를 시작 출구 다음 Sector로 지정 ex) 5번 Sector
     }
 
     public void setLongitude(double longitude){
@@ -98,11 +103,18 @@ public class Service {
 
     public void setAzimuth(float azimuth) {this.azimuth = azimuth;}
 
-    // 만약 String으로 "1"(번 출구)이 전달되면 Current_Sector가 1번 Sector로 저장
-    public void setCurrent_Sector(String source_Exit) { this.current_Sector = this.getMapdataFromIdx(Integer.parseInt(source_Exit) - 1); }
+    public void setCurrent_Sector(int number) { this.current_Sector = this.path.get(number); }
 
-    // 항상 0을 입력으로 받아 path에서 0부터 탐색하도록 함
-    public void setNext_Sector_Index(int next_Sector_Index) { this.next_Sector_Index = next_Sector_Index; }
+    public boolean setCurrent_Sector_Next(){
+        // 현재 Sector의 Index 찾기
+        int idx = this.path.indexOf(getCurrent_Sector());
+
+        // 다음 Sector가 마지막 Sector인 경우 true 반환
+        if(idx + 1 == this.path.size() - 1) { return true; }
+
+        this.setCurrent_Sector(idx + 1);
+        return false;
+    }
 
     public double getLongitude(){
         return this.longitude;
@@ -124,15 +136,27 @@ public class Service {
 
     public Sector getCurrent_Sector() { return this.current_Sector; }
 
-    public int getNext_Sector_Index() { return this.next_Sector_Index; }
-
     public void setSectorArrayList(ArrayList<Sector> mapList){
+        // 정렬 한 뒤에 넣는다.
+        Collections.sort(mapList, new Comparator<Sector>() {
+            @Override
+            public int compare(Sector s1, Sector s2) {
+                if (s1.getIndex() < s2.getIndex()) {
+                    return -1;
+                } else if (s1.getIndex() > s2.getIndex()) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
+
         this.sectorArrayList = mapList;
+        this.sectorArraySize = this.sectorArrayList.size();
     }
 
     public ArrayList<Sector> getPath() { return this.path; }
 
-    public Sector getNextSector(int idx) { return this.path.get(idx); }
+    public int getSectorArrayListSize() { return this.sectorArraySize; }
 
     public void push_backMapdata(Sector md){
         this.sectorArrayList.add(md);
@@ -144,7 +168,9 @@ public class Service {
     }
 
     public Sector getMapdataFromIdx(int index){
-        return this.sectorArrayList.get(index);
+        // DB는 1부터 10까지 sectorArrayList는 0부터 9까지이기에 index - 1을 해줌.
+        // ex) 2번 Sector를 불러오고 싶으면 sectorArrayList의 1번 Index에서 찾아야 함.
+        return this.sectorArrayList.get(index - 1);
     }
 
     public void setReadyFlag(boolean flag) {this.readyFlag = flag;}
@@ -158,7 +184,24 @@ public class Service {
         return this.readyFlag;
     }
 
-
+    // 두 섹터의 13개 인스턴스 일치율 반환
+    public int comp(Sector sec1, Sector sec2){
+        int num = 0;
+        if(sec1.getDot() == sec2.getDot()) num++;
+        if(sec1.getLine() == sec2.getLine()) num++;
+        if(sec1.getUpEscalator() == sec2.getUpEscalator()) num++;
+        if(sec1.getDownEscalator() == sec2.getDownEscalator()) num++;
+        if(sec1.getUpStair() == sec2.getUpStair()) num++;
+        if(sec1.getDownStair() == sec2.getDownStair()) num++;
+        if(sec1.getPillar() == sec2.getPillar()) num++;
+        if(sec1.getBoard() == sec2.getBoard()) num++;
+        if(sec1.getUpBoard() == sec2.getUpBoard()) num++;
+        if(sec1.getInSign() == sec2.getInSign()) num++;
+        if(sec1.getOutSign() == sec2.getOutSign()) num++;
+        if(sec1.getSign() == sec2.getSign()) num++;
+        if(sec1.getGate() == sec2.getGate()) num++;
+        return num;
+    }
 
 }
 
