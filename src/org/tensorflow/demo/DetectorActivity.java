@@ -422,7 +422,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
               // 좌표를 기준으로 5 * 5 개의 ImageSector로 구분
               int flag = yIdx * N + xIdx;
-              Log.e("flag", "flag? : " + flag + ", yIdx: " + yIdx + ", xIdx: " + xIdx);
+              //Log.e("flag", "flag? : " + flag + ", yIdx: " + yIdx + ", xIdx: " + xIdx);
 
 
               // Key값에 맞게 result 저장
@@ -437,7 +437,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 instanceBuffer.get(flag).replace(key, result);
               }
 
-              Log.e("result", "=========================result? : " + result + ", key: " + key);
+              //Log.e("result", "=========================result? : " + result + ", key: " + key);
 
               if (location != null && result.getConfidence() >= minimumConfidence) {
                 canvas.drawRect(location, paint);
@@ -472,7 +472,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               */
 
               // navigate 실행, service is ready는 맵데이터를 받아 왔을때 부터 Ture된다.
-              if(service != null && service.isReady()) navigate();
+              if(service != null && service.isReady()) {
+                try {
+                  navigate();
+                } catch (JSONException e) {
+                  e.printStackTrace();
+                }
+              }
 
               // 초기화
               dotFlag = false;
@@ -1004,29 +1010,33 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   public int matchSector() throws JSONException {
     // GPS Update후 비교
     myGps.startGps(DetectorActivity.this.service);
+    Log.e("gps",  "gps: " + DetectorActivity.this.service.getLatitude() +",  " + DetectorActivity.this.service.getLongitude());
 
     // 현 Gps와 가장 가까운 sector 찾기
-    double min = 1.0;
+    double min = 4321.0;
     int idx = 0;
-    for(int i=1; i <= service.getSectorArrayListSize(); i++){
-      final double lat = service.getMapdataFromIdx(i).getGPS().getDouble("latitude");
-      final double lon = service.getMapdataFromIdx(i).getGPS().getDouble("longitude");
-      double dist = (service.getLatitude()-lat) * (service.getLatitude()-lat) + (service.getLongitude()-lon) * (service.getLongitude()-lon);
+    Log.e("min",  "idx: " + idx + ", min: " + min );
+    for(int i=5; i <= DetectorActivity.this.service.getSectorArrayListSize(); i++){
+      double lat = DetectorActivity.this.service.getMapdataFromIdx(i).getGPS().getDouble("latitude");
+      double lon = DetectorActivity.this.service.getMapdataFromIdx(i).getGPS().getDouble("longitude");
+      Log.e("i",  "lat, lon: " + lat + ", " + lon);
+      double dist = (DetectorActivity.this.service.getLatitude()-lat) * (DetectorActivity.this.service.getLatitude()-lat) + (DetectorActivity.this.service.getLongitude()-lon) * (DetectorActivity.this.service.getLongitude()-lon);
       if(dist < min){
         min = dist; // min값 변경
         idx = i; // 가장 가까운 위치의 Sector 번호 저장
       }
     }
-
+    Log.e("min",  "idx: " + DetectorActivity.this.service.getSectorArrayListSize());
+    Log.e("min",  "idx: " + idx + ", min: " + min );
     // 가까운 Sector와 Path에서 nextSector의 번호 비교
-    if(service.getMapdataFromIdx(idx).getIndex() == service.getCurrent_Sector().getIndex()){
+    if(DetectorActivity.this.service.getMapdataFromIdx(idx).getIndex() == DetectorActivity.this.service.getCurrent_Sector().getIndex()){
       // 같다면 Instance 비교, 개수 반환
-      int num = service.comp(service.getMapdataFromIdx(idx), service.getCurrent_Sector());
+      int num = DetectorActivity.this.service.comp(DetectorActivity.this.service.getMapdataFromIdx(idx), DetectorActivity.this.service.getCurrent_Sector());
 
       /**7개 이상이라면 매칭 -> 실험적으로 변경 */
       if(num >= 7){
         // curSector 한칸 전진했을 때 목적지에 도착한 경우
-        if(service.setCurrent_Sector_Next()) return 2;
+        if(DetectorActivity.this.service.setCurrent_Sector_Next()) return 2;
         // 매칭만 된 경우
         return 1;
       }
@@ -1046,7 +1056,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         while(iterKey.hasNext()){
           int nKey = (int) iterKey.next();
 
-          Log.e("NavigateLog",  tmp + instanceBuffer.get(idx).get(nKey));
+          //Log.e("NavigateLog",  tmp + instanceBuffer.get(idx).get(nKey));
         }
       }
     }
@@ -1059,8 +1069,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     // dot block이 있다면 섹터 여부 확인
     // 목적지 도착 2반환, 매칭만 된 경우 1반환, 매칭 안된 경우 0반환
-    int flag;
+    int flag = -1;
     if(dotFlag) flag = matchSector();
+    Log.e("matchingSector", "matchingSector: " + flag);
   }
 
   // MapData를 서버로 부터 얻어서 Service 객체에 셋

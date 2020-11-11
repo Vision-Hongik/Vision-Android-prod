@@ -24,6 +24,11 @@ public class Service {
     //instances data structure class;
     private ArrayList<Sector> path;
 
+    public Service(){
+        this.sectorArrayList = new ArrayList<Sector>();
+        this.path = new ArrayList<Sector>();
+    }
+
     public Service(String source_Station, String source_Exit, String dest_Station, String dest_Exit){
         // if 출발지점이 null 이라면, 알아서 계산한다.
         this.source_Station = source_Station;
