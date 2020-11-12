@@ -1000,13 +1000,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // ...
   }
 
-  private double dist(double latitude, double longitude, JSONObject gps) throws JSONException {
-      final double lat = gps.getDouble("latitude");
-      final double lon = gps.getDouble("longitude");
-
-      return (latitude-lat) * (latitude-lat) + (longitude-lon) * (longitude-lon);
-  }
-
   public int matchSector() throws JSONException {
     // GPS Update후 비교
     myGps.startGps(DetectorActivity.this.service);
@@ -1016,7 +1009,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     double min = 4321.0;
     int idx = 0;
     Log.e("min",  "idx: " + idx + ", min: " + min );
-    for(int i=5; i <= DetectorActivity.this.service.getSectorArrayListSize(); i++){
+    for(int i=1; i <= DetectorActivity.this.service.getSectorArrayListSize(); i++){
       double lat = DetectorActivity.this.service.getMapdataFromIdx(i).getGPS().getDouble("latitude");
       double lon = DetectorActivity.this.service.getMapdataFromIdx(i).getGPS().getDouble("longitude");
       Log.e("i",  "lat, lon: " + lat + ", " + lon);
