@@ -2,6 +2,8 @@ package org.tensorflow.demo.vision_module;
 
 import android.util.Log;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -113,15 +115,28 @@ public class Service {
 
     public void setCurrent_Sector(int number) { this.current_Sector = this.path.get(number); }
 
-    // currentSector에 도착했다면 path의 다음 currentSector로 지정 및 방향을 저장
-    public boolean setCurrent_Sector_Next(){
+    public boolean setCurrentSectorToNext() throws JSONException {
         // 현재 Sector의 Index 찾기
         int idx = this.path.indexOf(getCurrent_Sector());
-
         // 현재 Sector가 마지막 Sector인 경우 true 반환
         if(idx == this.path.size() - 1) { return true; }
 
+        // 현재 사용자의 위치에 있는 섹터
+        Sector sec = new Sector(getCurrent_Sector());
+
+        // 다음 섹터로 currentSector변경
         this.setCurrent_Sector(idx + 1);
+
+        // 이전 섹터에서 다음 섹터로 방향을 지정
+        for(int i =0; i < sec.getAdjacentIdx().length(); i++){
+            int adjacentIdx = (int) sec.getAdjacentIdx().get(i);
+            Log.e("way", "adjacentIdx, nextIdx ? " + adjacentIdx + getCurrent_Sector().getIndex() + ", way: " + sec.getAdjacentDir().get(i));
+            if(adjacentIdx != getCurrent_Sector().getIndex()) continue;
+
+            this.setWay((String)sec.getAdjacentDir().get(i));
+            break;
+        }
+
         return false;
     }
 

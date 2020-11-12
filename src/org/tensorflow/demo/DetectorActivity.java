@@ -21,7 +21,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -35,7 +34,6 @@ import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.speech.RecognitionListener;
@@ -48,7 +46,6 @@ import android.view.KeyEvent;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.GestureDetectorCompat;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -82,11 +79,9 @@ import org.tensorflow.demo.vision_module.Sector;
 import org.tensorflow.demo.vision_module.Service;
 import org.tensorflow.demo.vision_module.Voice;
 import org.tensorflow.demo.vision_module.senario;
-import org.w3c.dom.Element;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -1029,7 +1024,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       /**7개 이상이라면 매칭 -> 실험적으로 변경 */
       if(num >= 7){
         // curSector 한칸 전진했을 때 목적지에 도착한 경우
-        if(DetectorActivity.this.service.setCurrent_Sector_Next()) return 2;
+        if(DetectorActivity.this.service.setCurrentSectorToNext()) return 2;
         // 매칭만 된 경우
         return 1;
       }
@@ -1037,6 +1032,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // 매칭 안된 경우
     return 0;
   }
+
+  public static String[] WAY = {"앞", "우측앞", "우", "우측뒤", "뒤", "좌측뒤", "좌", "좌측앞"};
 
   public void navigate() throws JSONException {
 
@@ -1065,6 +1062,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     int flag = -1;
     if(dotFlag) flag = matchSector();
     Log.e("matchingSector", "matchingSector: " + flag);
+
+    // 목적지 도착 서비스 종료 TTS 구현
+    if(matchSector() == 2){
+      // 아성이형 구현해주세요..
+    }
+
+    // 매칭 된 경우 방향 정하기
+    if(matchSector() == 1){
+      // index 는 0~7, N 방향부터 시계방향으로
+      int index = sotwFormatter.whereUserGo(service.getAzimuth(), DetectorActivity.this.service.getWay());
+      // {"앞", "우측앞", "우", "우측뒤", "뒤", "좌측뒤", "좌", "좌측앞"} 으로 변환
+      String way = WAY[index];
+      // 방향 TTS 구현 필요 아성이형 구현해주세요
+    }
+
   }
 
   // MapData를 서버로 부터 얻어서 Service 객체에 셋
@@ -1114,6 +1126,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           Log.e("DB", "onResponse 이웃섹터 idx: " + service.getSectorArrayList().get(i).getAdjacentIdx() + "\n");
           Log.e("DB", "onResponse 이웃섹터 direction: " + service.getSectorArrayList().get(i).getAdjacentDir() + "\n");
         }
+
         if(myCallback != null) myCallback.callback();
       } //onResponse
     };
