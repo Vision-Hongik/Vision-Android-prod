@@ -14,11 +14,13 @@ public class Service {
     private String source_Exit;
     private String dest_Station;
     private String dest_Exit;
+    private String way;
     private float azimuth;
-    private Sector current_Sector;
     private int sectorArraySize;
     private boolean readyFlag;
 
+    // 사용자가 현재 찾아갈 섹터
+    private Sector current_Sector;
     //private jsonObject Array
     private ArrayList<Sector> sectorArrayList;
     //instances data structure class;
@@ -27,6 +29,7 @@ public class Service {
     public Service(){
         this.sectorArrayList = new ArrayList<Sector>();
         this.path = new ArrayList<Sector>();
+        this.current_Sector = new Sector();
     }
 
     public Service(String source_Station, String source_Exit, String dest_Station, String dest_Exit){
@@ -110,12 +113,13 @@ public class Service {
 
     public void setCurrent_Sector(int number) { this.current_Sector = this.path.get(number); }
 
+    // currentSector에 도착했다면 path의 다음 currentSector로 지정 및 방향을 저장
     public boolean setCurrent_Sector_Next(){
         // 현재 Sector의 Index 찾기
         int idx = this.path.indexOf(getCurrent_Sector());
 
-        // 다음 Sector가 마지막 Sector인 경우 true 반환
-        if(idx + 1 == this.path.size() - 1) { return true; }
+        // 현재 Sector가 마지막 Sector인 경우 true 반환
+        if(idx == this.path.size() - 1) { return true; }
 
         this.setCurrent_Sector(idx + 1);
         return false;
@@ -140,6 +144,8 @@ public class Service {
     public float getAzimuth() { return this.azimuth;}
 
     public Sector getCurrent_Sector() { return this.current_Sector; }
+
+    public String getWay() { return way; }
 
     public void setSectorArrayList(ArrayList<Sector> mapList){
         // 정렬 한 뒤에 넣는다.
@@ -180,6 +186,8 @@ public class Service {
 
     public void setReadyFlag(boolean flag) {this.readyFlag = flag;}
 
+    public void setWay(String way) { this.way = way; }
+
     public boolean isReady(){
         if(this.sectorArrayList.isEmpty()){
             Log.e("service", "isReady: Sector Array is Empty" );
@@ -207,6 +215,7 @@ public class Service {
         if(sec1.getGate() == sec2.getGate()) num++;
         return num;
     }
+
 
 }
 
