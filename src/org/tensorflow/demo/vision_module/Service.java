@@ -2,6 +2,7 @@ package org.tensorflow.demo.vision_module;
 
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -73,10 +74,62 @@ public class Service {
         // 방향물어보면 자이로. 최후의 수단 교수님이 욕을하면,,,,
     }
 
+    public ArrayList searchAdjacentList(int sector_idx) throws JSONException {
+        JSONArray adjacent_idx;
+        ArrayList<Integer> adj_idx_list = new ArrayList<Integer> ();
 
+        adjacent_idx = this.getSectorArrayList().get(sector_idx).getAdjacentIdx();
+        for(int i =0; i < adjacent_idx.length(); i++) {
+            int adjacentIdx = (int) adjacent_idx.get(i);
+            adj_idx_list.add(adjacentIdx);
+        }
+
+        return adj_idx_list;
+    }
+
+    public void DFS(int src, int dst) throws JSONException {
+        int temp=0, visit=src;
+        ArrayList adj_idx_list = new ArrayList<Integer> ();
+        adj_idx_list = searchAdjacentList(visit);
+
+
+        if(visit != dst) {
+            if(adj_idx_list.size() == 1) {
+                Log.e("sss", String.valueOf((int) adj_idx_list.get(0)));
+                visit = (int) adj_idx_list.get(0);
+            }
+            else {
+                for(int i =0; i < adj_idx_list.size(); ++i) {
+                    if (temp < (int) adj_idx_list.get(i)) temp = (int) adj_idx_list.get(i);
+                }
+                visit = temp;
+            }
+            this.path.add(this.getMapdataFromIdx(visit));
+            Log.e("path 원소수", String.valueOf(this.path.size()));
+            DFS(visit, dst);
+        }
+        this.path.add(this.getMapdataFromIdx(visit));
+        Log.e("dfs 마지막 push visit", String.valueOf(visit));
+    }
+
+//        while(visit != dst) {
+//            adj_idx_list = searchAdjacentList(visit);
+//            for(int i =0; i < adj_idx_list.size(); i++) {
+//                visit = (int) adj_idx_list.get(i);
+//                if(adj_idx_list.size() == 1) {
+//                    this.path.add(this.getMapdataFromIdx(visit));
+//                }
+//                else {
+//                    DFS(visit, dst);
+//                }
+//            }
+//
+//        }
 
     // 경로 설정
-    public void setPath(String src, String dst){
+    public void setPath(String src, String dst) throws JSONException {
+        ArrayList<Integer> adj_idx_list = new ArrayList<Integer> ();
+
         int srcSector = Integer.parseInt(src);
         int dstSector;
 
@@ -84,18 +137,23 @@ public class Service {
             dstSector = 10;
         else
             dstSector = Integer.parseInt(dst);
-
-        Log.e("src&dest", srcSector+","+ dstSector);
-
-        //this.sectorArrayList
+        Log.e("src&dest", "SetPath 시작:::" + srcSector+","+ dstSector);
 
         // 소현이가 구현하기 전까지 스태틱으로 하겠슴니더..
-        this.path.add(this.getMapdataFromIdx(2) ); // 시작 출구
-        this.path.add(this.getMapdataFromIdx(5) );
-        this.path.add(this.getMapdataFromIdx(7) );
-        this.path.add(this.getMapdataFromIdx(8) );
-        this.path.add(this.getMapdataFromIdx(9) );
-        this.path.add(this.getMapdataFromIdx(10) ); // 탑승장
+        {
+            this.path.add(this.getMapdataFromIdx(srcSector) ); // 시작 출구
+            try {
+                DFS(srcSector, dstSector);
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
+
+        }
+//        this.path.add(this.getMapdataFromIdx(5) );
+//        this.path.add(this.getMapdataFromIdx(7) );
+//        this.path.add(this.getMapdataFromIdx(8) );
+//        this.path.add(this.getMapdataFromIdx(9) );
+//        this.path.add(this.getMapdataFromIdx(10) ); // 탑승장
 
         this.setCurrent_Sector(1); // 현재 Sector를 시작 출구 다음 Sector로 지정 ex) 5번 Sector
     }
@@ -252,7 +310,5 @@ public class Service {
         this.userSectorNum = userSectorNum;
     }
 }
-
-
 
 
