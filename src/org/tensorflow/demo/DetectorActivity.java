@@ -315,9 +315,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   tmp = tmp + " -> " +sec.getIndex();
                 }
                 lines.add(tmp);
-                lines.add("Cur Sector: " + service.getCurrent_Sector().getIndex());
+                lines.add("Next Sector: " + service.getCurrent_Sector().getIndex());
                 lines.add("matchingFlag: " + service.getMatchingFlag());
-                lines.add("현재 위치: " + service.getUserSectorNum());
+                lines.add("현재 sector: " + service.getUserSectorNum());
                 lines.add("Way: " + service.getWay());
                 lines.add("NextWay: " + service.getNextWay());
                 lines.add("");
