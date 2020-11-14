@@ -164,7 +164,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private boolean dotFlag = false;
   private boolean yoloFirstStartFlag = false;
 
-  public InstanceBuffer instanceBuffer = new InstanceBuffer();
+  public InstanceMatrix instanceMatrix = new InstanceMatrix();
   public InstanceTimeBuffer instanceTimeBuffer = new InstanceTimeBuffer();
 
   @Override
@@ -172,7 +172,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     super.onCreate(savedInstanceState);
 
     // 5 * 5 분면의 InstanceBuffer 초기화
-    instanceBuffer.initMat(5,5);
+    instanceMatrix.initMat(5,5);
 
 
     // GPS가 꺼져있다면 On Dialog
@@ -283,21 +283,40 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 lines.add("Instance Buffer");
                 lines.add("");
 
-                for(int i=0; i<N; i++){
-                  for(int j=0; j<N; j++){
+                for (int i = 0; i < N; i++) {
+                  for (int j = 0; j < N; j++) {
                     boolean flag_buffer = false;
-                    int idx = (i*N) + j;
-                    Set keySet = DetectorActivity.this.instanceBuffer.get(idx).keySet();
+                    Set keySet = DetectorActivity.this.instanceMatrix.getPart_from_MatIdx(i, j).keySet();
                     Iterator iterKey = keySet.iterator();
                     String tmp = i + " * " + j + " 분면: ";
-                    while(iterKey.hasNext()){
+                    while (iterKey.hasNext()) {
                       flag_buffer = true;
                       int nKey = (int) iterKey.next();
-                      tmp = tmp + " (" + DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getTitle() + ", "+ DetectorActivity.this.instanceBuffer.get(idx).get(nKey).getCount()+")";
+                      tmp = tmp + " (" + TensorFlowYoloDetector.LABELS[nKey] + " " + DetectorActivity.this.instanceMatrix.getPart_from_MatIdx(i, j).get(nKey) + "개)";
                     }
-                    if(flag_buffer)
+                    if (flag_buffer)
                       lines.add(tmp);
                   }
+                }
+
+
+                lines.add("");
+                lines.add("InstanceTimeBuffer");
+                lines.add("");
+
+                if(!DetectorActivity.this.instanceTimeBuffer.isEmpty()) {
+
+                  InstanceHashTable lastInstanceBuffer = instanceTimeBuffer.getLast();
+                  Iterator iterKey = lastInstanceBuffer.keySet().iterator();
+                  while (iterKey.hasNext()) {
+                    int nKey = (int) iterKey.next();
+                    ArrayList<Classifier.Recognition> recognitionArrayList =  lastInstanceBuffer.get(nKey);
+                    for(int i = 0; i < recognitionArrayList.size(); i++) {
+                      Classifier.Recognition recog = recognitionArrayList.get(i);
+                      lines.add(recog.getTitle() + " No."+i + " ("+ recog.getMatIdx(N,N).rowIdx + ","+recog.getMatIdx(N,N).colIdx+")");
+                    }
+                  }
+
                 }
 
                 lines.add("");
@@ -413,7 +432,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //--------------------------------------Instance Time Buffer 추가 -----------------------------------
 
             // Instance의 클래스 별로 Table 생성, 각 키별로 ArrayList..
-            InstanceHashTable curTimeInstance = new InstanceHashTable();
+            InstanceHashTable curTimeInstance = new InstanceHashTable(N,N);
             // 현재 발견된 instance를 Table화
             for(final Classifier.Recognition result : results){
               curTimeInstance.putRecog(result);
@@ -430,29 +449,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               //Log.e("result", "=========================offset? : " + result.toString());
               final RectF location = result.getLocation();
 
-              float centorY = (location.bottom + location.top) / 2;
-              float centorX = (location.left + location.right) / 2;
-              int yIdx = (int)centorY / ((int)bitmapHeight / N);
-              int xIdx = (int)centorX / ((int)bitmapWidth / N);
-
-              // 좌표를 기준으로 5 * 5 개의 ImageSector로 구분
-              int flag = yIdx * N + xIdx;
-              //Log.e("flag", "flag? : " + flag + ", yIdx: " + yIdx + ", xIdx: " + xIdx);
-
-
-              // Key값에 맞게 result 저장
-              final int key = result.getIdx();
-              final Classifier.Recognition value = instanceBuffer.get(flag).get(key);
-              if(value == null) {
-                result.setCount(1);
-                instanceBuffer.get(flag).put(key, result);
-              }
-              else{
-                result.setCount(value.getCount() + 1);
-                instanceBuffer.get(flag).replace(key, result);
-              }
-
-              //Log.e("result", "=========================result? : " + result + ", key: " + key);
+              instanceMatrix.putRecog(result);
 
               if (location != null && result.getConfidence() >= minimumConfidence) {
                 canvas.drawRect(location, paint);
@@ -485,7 +482,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               curSector.reset();
               DetectorActivity.this.lastProcessingTimeMs1 = 0;
 
-              instanceBuffer.instanceClear();
+              instanceMatrix.instanceClear();
             }
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
@@ -1040,7 +1037,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     for(int i=0; i<N; i++){
       for(int j=0; j<N; j++){
         int idx = (i*N) + j;
-        Set keySet = instanceBuffer.get(idx).keySet();
+        Set keySet = instanceMatrix.get(idx).keySet();
         Iterator iterKey = keySet.iterator();
         String tmp = i + " * " + j + " 분면: ";
         while(iterKey.hasNext()){

@@ -51,12 +51,14 @@ public interface Classifier {
     /** Optional location within the source image for the location of the recognized object. */
     private RectF location;
 
+    private float bitmapWidth;
+    private float bitmapHeight;
     private int count;
     private boolean announced;
     private int timeStamp;
 
     public Recognition(
-        final String id, final int idx, final String title, final Float confidence, final RectF location) {
+        final String id, final int idx, final String title, final Float confidence, final RectF location,float bitmapWidth,float bitmapHeight) {
       this.id = id;                   /** 고유 offset */
       this.idx = idx;                 /** class num */
       this.title = title;             /** class name */
@@ -65,6 +67,8 @@ public interface Classifier {
       this.count = 0;
       announced = false;
       timeStamp = 0;
+      this.bitmapWidth = bitmapWidth;
+      this.bitmapHeight = bitmapHeight;
     }
 
     public String getId() { return id; }
@@ -128,6 +132,28 @@ public interface Classifier {
 
       return resultString.trim();
     }
+
+    public class MatIdx{
+      int rowIdx;
+      int colIdx;
+      int rowDim;
+      int colDim;
+      MatIdx(int rowIdx,int colIdx, int rowDim, int colDim){
+        this.rowIdx = rowIdx;
+        this.colIdx = colIdx;
+        this.rowDim = rowDim;
+        this.colDim = colDim;
+      }
+    }
+
+    //public ArrayList<>
+
+    public MatIdx getMatIdx(int rowDim, int colDim){
+      int rowIdx = (int) (this.location.centerX() / (this.bitmapWidth / rowDim));
+      int colIdx = (int) (this.location.centerY() / (this.bitmapHeight / colDim));
+      return new MatIdx(rowIdx,colIdx,rowDim,colDim);
+    }
+
   }
 
   List<Recognition> recognizeImage(Bitmap bitmap);

@@ -85,15 +85,6 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     }
 
 
-    public int getRowMatIdx(float centorX,int rowDim){
-        return (int) (centorX / ((int)this.bitmapWidth / rowDim));
-    }
-
-    public int getColMatIdx(float centorY, int colDim){
-        return (int) (centorY / ((int)this.bitmapHeight / colDim));
-    }
-
-
     public int getMaxSize(){return this.maxSize;}
     public void setMaxSize(int ms) {this.maxSize = ms;}
 

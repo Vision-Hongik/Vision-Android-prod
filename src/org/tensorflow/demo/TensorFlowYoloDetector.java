@@ -50,7 +50,7 @@ public class TensorFlowYoloDetector implements Classifier {
     16.62, 10.52
   };
 
-  private static final String[] LABELS = {
+  public static final String[] LABELS = {
     "dot",
     "line",
     "person",
@@ -227,7 +227,7 @@ public class TensorFlowYoloDetector implements Classifier {
           if (confidenceInClass > DetectorActivity.MINIMUM_CONFIDENCE_YOLO) {
             LOGGER.i(
                 "%s (%d) %f %s", LABELS[detectedClass], detectedClass, confidenceInClass, rect);
-            pq.add(new Recognition("" + offset, detectedClass, LABELS[detectedClass], confidenceInClass, rect));
+            pq.add(new Recognition("" + offset, detectedClass, LABELS[detectedClass], confidenceInClass, rect,bitmap.getWidth(),bitmap.getHeight()));
 
           }
         }
