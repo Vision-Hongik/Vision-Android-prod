@@ -133,8 +133,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
   private Bitmap cropSignBitmap = null;
-  private float bitmapWidth;
-  private float bitmapHeight;
+  private float bitmapWidth = 0;
+  private float bitmapHeight = 0;
   private int N = 5; // N * N 사분면
 
   private static final int BUFFERTIME = 3;
@@ -282,6 +282,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 lines.add("");
                 lines.add("Instance Buffer");
                 lines.add("");
+
                 for(int i=0; i<N; i++){
                   for(int j=0; j<N; j++){
                     boolean flag_buffer = false;
@@ -298,6 +299,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                       lines.add(tmp);
                   }
                 }
+
                 lines.add("");
                 lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
                 lines.add("");
@@ -380,9 +382,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             DetectorActivity.this.lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-            bitmapWidth = croppedBitmap.getWidth() - 1;
-            bitmapHeight = croppedBitmap.getWidth() - 1;
-
+            if(bitmapHeight == 0 || bitmapWidth == 0) {
+              DetectorActivity.this.bitmapHeight = croppedBitmap.getHeight() - 1;
+              DetectorActivity.this.bitmapWidth = croppedBitmap.getWidth() - 1;
+              Log.e("bitmapSize", "width: " + bitmapWidth );
+              Log.e("bitmapSize", "height: " + bitmapWidth );
+              instanceTimeBuffer.setBitmapHeight(DetectorActivity.this.bitmapHeight);
+              instanceTimeBuffer.setBitmapWidth(DetectorActivity.this.bitmapWidth);
+            }
             // Canvas On/Off 기능 생각해보기
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
@@ -407,7 +414,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //--------------------------------------Instance Time Buffer 추가 -----------------------------------
 
             // Instance의 클래스 별로 Table 생성, 각 키별로 ArrayList..
-            InstanceHashTable curTimeInstance = new InstanceHashTable(bitmapWidth,bitmapHeight);
+            InstanceHashTable curTimeInstance = new InstanceHashTable();
             // 현재 발견된 instance를 Table화
             for(final Classifier.Recognition result : results){
               curTimeInstance.putRecog(result);
@@ -464,21 +471,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             // 2초 지날때마다 갱신
             if(DetectorActivity.this.lastProcessingTimeMs1 >= BUFFERTIME * 1000){
 
-              /*  buffer 담긴 Instance log 찍어보기
-              for(int i=0; i<N; i++){
-                for(int j=0; j<N; j++){
-                  int idx = (i*N) + j;
-                  Set keySet = instanceBuffer.get(idx).keySet();
-                  Iterator iterKey = keySet.iterator();
-                  String tmp = i + " * " + j + " 분면: ";
-                  while(iterKey.hasNext()){
-                    int nKey = (int) iterKey.next();
-
-                    Log.e("key",  tmp + instanceBuffer.get(idx).get(nKey));
-                  }
-                }
-              }
-              */
 
               // navigate 실행, service is ready는 맵데이터를 받아 왔을때 부터 Ture된다.
               if(service != null && service.isReady()) {
@@ -493,11 +485,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               dotFlag = false;
               curSector.reset();
               DetectorActivity.this.lastProcessingTimeMs1 = 0;
-//              for(int i = 0; i < N; i++) {
-//                for (int j = 0; j < N; j++) {
-//                  instanceBuffer.get(i * N + j).clear();
-//                }
-//              }
+
               instanceBuffer.instanceClear();
             }
 
@@ -1215,11 +1203,34 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         }
       });
+
+      //debugSangsuMapdata();
+
       return true;
     }
     return super.onKeyDown(keyCode, event);
   }
 
+
+  public void debugSangsuMapdata(){
+    service.setDest_Station("합정");
+    service.setSource_Station("상수");
+    service.setSource_Exit("2");
+    service.setDest_Exit("3");
+    getMapData_To_Service_From_Server("sangsu", new MyCallback() {
+      @Override
+      public void callback() {
+        Log.e("n", "Navigate 시작" );
+        voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
+        service.setReadyFlag(true);
+      }
+
+      @Override
+      public void callbackBundle(Bundle results) {
+
+      }
+    });
+  }
 
   // GPS 꺼져있을 경우 alert dialog
   protected void createLocationRequest()
