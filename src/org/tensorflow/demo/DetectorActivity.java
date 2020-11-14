@@ -681,10 +681,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       targetStation = stt_Station.split("역")[0];
     }
     else targetStation = stt_Station;
+    Log.e("11", "stepppp done.");
 
     if (targetStation.contains("수") || targetStation.contains("상")) targetStation = "상수";
     else if (targetStation.contains("정") || targetStation.contains("합")) targetStation = "합정";
-    //Log.e("한번 가공후", targetStation);
+    Log.e("한번 가공후", "step done...");
 
     /*아래는.. 당장은 안쓸 메소드 (ex. 부산->busan으로 바꾸는)*/
 //    for (int i = 0; i < stt_Station.length(); i++) {
@@ -721,13 +722,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //    }
 //    Log.e("result_in_eng:", resultEng);
 
+    Log.e("최종결과는?", targetStation);
     return targetStation;
   };
 
   //몇번 출구인지 파악하는 메소드
-  public String recognizeExitNum(String stt_Exit) {
+  public String recognizeExit(String stt_Exit) {
         String exitNum = "", exitMatch = "";
-        int targetExit = 0;
+        String targetExit = "1";
 
         if (stt_Exit.contains("번")) {
             exitNum = stt_Exit.split("번")[0];
@@ -741,40 +743,37 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             exitMatch = exitNum;
             switch (exitMatch) {
                 case "일":
-                    targetExit = 1;
+                    targetExit = "1";
                     break;
                 case "이":
-                    targetExit = 2;
+                    targetExit = "2";
                     break;
-                case "삼":
-                    targetExit = 3;
+                case "삼": case "산":
+                    targetExit = "3";
                   break;
                 case "사":
-                    targetExit = 4;
+                    targetExit = "4";
                   break;
                 case "오":
-                    targetExit = 5;
+                    targetExit = "5";
                   break;
                 case "육":
-                    targetExit = 6;
+                    targetExit = "6";
                   break;
-                case "칠":
-                    targetExit = 7;
+                case "칠": case "친":
+                    targetExit = "7";
                   break;
-                case "팔":
-                    targetExit = 8;
+                case "팔": case "판": case "팜":
+                    targetExit = "8";
                   break;
                 case "구":
-                    targetExit = 9;
+                    targetExit = "9";
                     break;
                 case "십":
-                    targetExit = 10;
+                    targetExit = "10";
                     break;
-                default:
-                    targetExit = 0;
-                  break;
             }
-            exitNum = Integer.toString(targetExit);
+            exitNum = targetExit;
         }
         return exitNum;
     };
@@ -811,7 +810,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
           if(answer.charAt(0) == '아' && answer.charAt(1) == '니') DetectorActivity.this.initCompletedStatus = 0;
 
-          else if(answer.charAt(0) != '네' && answer.charAt(0) != '내'){
+          else if(answer.charAt(0) != '네' && answer.charAt(0) != '내' && answer.charAt(0) != '예'){
             // 출발지, 도착지가 제대로 체크되지 않았다면, 함수 다시 시작!
             voice.TTS("다시 버튼을 눌러주세요.");
           }
@@ -856,6 +855,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
         stt_dstExit = mResult.get(0);
+        stt_dstExit = recognizeExit(stt_dstExit);
         service.setDest_Exit(stt_dstExit);
         Log.e("v", "Destination Exit onResults: " + service.getDest_Exit());
 
@@ -889,7 +889,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
         stt_dstStation = mResult.get(0);
-        Log.e("stt_dstStation", stt_dstStation ); //입력값 자체를 로그 찍어보기
+        stt_dstStation = recognizeStation(stt_dstStation);
 
         service.setDest_Station(stt_dstStation);
         Log.e("v", "End Station onResults: " + service.getDest_Station());
@@ -921,7 +921,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
-        stt_srcExit = mResult.get(0);; //모든 인식 경우에 대해 출구 결과값을 하나로 도출해냄.
+        stt_srcExit = mResult.get(0);
+        stt_srcExit = recognizeExit(stt_srcExit);//모든 인식 경우에 대해 출구 결과값을 하나로 도출해냄
         service.setSource_Exit(stt_srcExit);
 //        service.setCurrent_Sector(srcExitNumber); // 현재 Sector로 입력
 //        service.setNext_Sector_Index(0);
@@ -958,8 +959,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
         key = SpeechRecognizer.RESULTS_RECOGNITION;
         ArrayList<String> mResult = results.getStringArrayList(key);
-        stt_srcStation = mResult.get(0); //입력받은 단어를 새로운 변수 stt_srcStation에 담음
-
+        stt_srcStation = mResult.get(0);
+        stt_srcStation = recognizeStation(stt_srcStation);//입력받은 단어 파싱
         service.setSource_Station(stt_srcStation);
         Log.e("v", "Start Station onResults: " + service.getSource_Station() ); //입력값 파싱 후 역 이름 로그 찍어보기
 
