@@ -280,27 +280,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 }
 
                 lines.add("");
-                lines.add("Instance Buffer");
-                lines.add("");
-
-                for (int i = 0; i < N; i++) {
-                  for (int j = 0; j < N; j++) {
-                    boolean flag_buffer = false;
-                    Set keySet = DetectorActivity.this.instanceMatrix.getPart_from_MatIdx(i, j).keySet();
-                    Iterator iterKey = keySet.iterator();
-                    String tmp = i + " * " + j + " 분면: ";
-                    while (iterKey.hasNext()) {
-                      flag_buffer = true;
-                      int nKey = (int) iterKey.next();
-                      tmp = tmp + " (" + TensorFlowYoloDetector.LABELS[nKey] + " " + DetectorActivity.this.instanceMatrix.getPart_from_MatIdx(i, j).get(nKey) + "개)";
-                    }
-                    if (flag_buffer)
-                      lines.add(tmp);
-                  }
-                }
-
-
-                lines.add("");
                 lines.add("InstanceTimeBuffer");
                 lines.add("");
 
