@@ -32,9 +32,8 @@ public class Sector {
     private JSONArray adjacent_idx;
     private JSONArray adjacent_dir;
 
-    public Sector(){
+    public Sector(){}
 
-    }
     public Sector(boolean init){
         this.dot = init;
         this.line = init;
@@ -49,6 +48,30 @@ public class Sector {
         this.outSign = init;
         this.sign = init;
         this.gate = init;
+    }
+
+    public Sector(Sector sec){
+        this.id = sec.id;
+        this.name = sec.name;
+        this.type = sec.type;
+        this.index = sec.index;
+        this.dot = sec.dot;
+        this.line = sec.line;
+        this.upEscalator = sec.upEscalator;
+        this.downEscalator = sec.downEscalator;
+        this.upStair = sec.upStair;
+        this.downStair = sec.downStair;
+        this.pillar = sec.pillar;
+        this.board = sec.board;
+        this.upBoard = sec.upBoard;
+        this.subwayTracks = sec.subwayTracks;
+        this.inSign = sec.inSign;
+        this.outSign = sec.outSign;
+        this.sign = sec.sign;
+        this.gate = sec.gate;
+        this.gps = sec.gps;
+        this.adjacent_idx = sec.adjacent_idx;
+        this.adjacent_dir = sec.adjacent_dir;
     }
 
     public Sector(JSONObject job){

@@ -2,6 +2,8 @@ package org.tensorflow.demo.vision_module;
 
 import android.util.Log;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,11 +16,16 @@ public class Service {
     private String source_Exit;
     private String dest_Station;
     private String dest_Exit;
+    private String way;
+    private String nextWay;
     private float azimuth;
-    private Sector current_Sector;
     private int sectorArraySize;
     private boolean readyFlag;
+    private int matchingFlag;
+    private int userSectorNum;
 
+    // 사용자가 현재 찾아갈 섹터
+    private Sector current_Sector;
     //private jsonObject Array
     private ArrayList<Sector> sectorArrayList;
     //instances data structure class;
@@ -27,6 +34,7 @@ public class Service {
     public Service(){
         this.sectorArrayList = new ArrayList<Sector>();
         this.path = new ArrayList<Sector>();
+        this.current_Sector = new Sector();
     }
 
     public Service(String source_Station, String source_Exit, String dest_Station, String dest_Exit){
@@ -110,14 +118,28 @@ public class Service {
 
     public void setCurrent_Sector(int number) { this.current_Sector = this.path.get(number); }
 
-    public boolean setCurrent_Sector_Next(){
+    public boolean setCurrentSectorToNext() throws JSONException {
         // 현재 Sector의 Index 찾기
         int idx = this.path.indexOf(getCurrent_Sector());
+        // 현재 Sector가 마지막 Sector인 경우 true 반환
+        if(idx == this.path.size() - 1) { return true; }
 
-        // 다음 Sector가 마지막 Sector인 경우 true 반환
-        if(idx + 1 == this.path.size() - 1) { return true; }
+        // 현재 사용자의 위치에 있는 섹터
+        Sector sec = new Sector(getCurrent_Sector());
 
+        // 다음 섹터로 currentSector변경
         this.setCurrent_Sector(idx + 1);
+
+        // 이전 섹터에서 다음 섹터로 방향을 지정
+        for(int i =0; i < sec.getAdjacentIdx().length(); i++){
+            int adjacentIdx = (int) sec.getAdjacentIdx().get(i);
+            Log.e("way", "adjacentIdx, nextIdx ? " + adjacentIdx + ", " + getCurrent_Sector().getIndex() + ", way: " + sec.getAdjacentDir().get(i));
+            if(adjacentIdx != getCurrent_Sector().getIndex()) continue;
+
+            this.setWay((String)sec.getAdjacentDir().get(i));
+            break;
+        }
+
         return false;
     }
 
@@ -140,6 +162,10 @@ public class Service {
     public float getAzimuth() { return this.azimuth;}
 
     public Sector getCurrent_Sector() { return this.current_Sector; }
+
+    public String getWay() { return way; }
+
+    public String getNextWay() { return nextWay; }
 
     public void setSectorArrayList(ArrayList<Sector> mapList){
         // 정렬 한 뒤에 넣는다.
@@ -178,7 +204,15 @@ public class Service {
         return this.sectorArrayList.get(index - 1);
     }
 
+    public int getMatchingFlag() { return matchingFlag; }
+
     public void setReadyFlag(boolean flag) {this.readyFlag = flag;}
+
+    public void setWay(String way) { this.way = way; }
+
+    public void setNextWay(String nextWay) { this.nextWay = nextWay; }
+
+    public void setMatchingFlag(int matchingFlag) { this.matchingFlag = matchingFlag; }
 
     public boolean isReady(){
         if(this.sectorArrayList.isEmpty()){
@@ -208,6 +242,13 @@ public class Service {
         return num;
     }
 
+    public int getUserSectorNum() {
+        return userSectorNum;
+    }
+
+    public void setUserSectorNum(int userSectorNum) {
+        this.userSectorNum = userSectorNum;
+    }
 }
 
 

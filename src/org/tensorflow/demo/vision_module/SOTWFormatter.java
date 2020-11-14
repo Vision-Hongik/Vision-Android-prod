@@ -1,6 +1,7 @@
 package org.tensorflow.demo.vision_module;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.tensorflow.demo.R;
 
@@ -19,7 +20,6 @@ import org.tensorflow.demo.R;
 public class SOTWFormatter {
     private static final int[] sides = {0, 45, 90, 135, 180, 225, 270, 315, 360};
     private static String[] names = null;
-
     public SOTWFormatter(Context context) {
         initLocalizedNames(context);
     }
@@ -28,6 +28,47 @@ public class SOTWFormatter {
         int iAzimuth = (int)azimuth;
         int index = findClosestIndex(iAzimuth);
         return iAzimuth + "° " + names[index];
+    }
+
+    // azimuth 현재 사용자의 방향 각도와 가야할 곳을 비교
+    public int whereUserGo(float azimuth, String way) {
+        int iAzimuth = (int)azimuth;
+        int userWay = sides[findClosestIndex(iAzimuth)];
+        int nextWay = nameToSide(way);
+        return findClosestIndex((nextWay - userWay + 360) % 360);
+    }
+
+    public int nameToSide(String name){
+        int side = -1;
+        switch (name){
+            case "N":
+                side = 0;
+                break;
+            case "NE":
+                side = 45;
+                break;
+            case "E":
+                side = 90;
+                break;
+            case "SE":
+                side = 135;
+                break;
+            case "S":
+                side = 180;
+                break;
+            case "SW":
+                side = 225;
+                break;
+            case "W":
+                side = 270;
+                break;
+            case "NW":
+                side = 315;
+                break;
+        }
+
+        if(side == -1) Log.e("ERROR", "<SOTWFormatter.nameToSide()>");
+        return side;
     }
 
     private void initLocalizedNames(Context context) {
