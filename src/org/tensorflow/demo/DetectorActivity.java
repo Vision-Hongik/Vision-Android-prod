@@ -309,6 +309,19 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 lines.add("Src Exit: " + service.getSource_Exit());
                 lines.add("Dst Station: " + service.getDest_Station());
                 lines.add("Dst Exit: " + service.getDest_Exit());
+                lines.add("");
+                String tmp = "Path";
+                for(Sector sec : service.getPath()){
+                  tmp = tmp + " -> " +sec.getIndex();
+                }
+                lines.add(tmp);
+                lines.add("Cur Sector: " + service.getCurrent_Sector().getIndex());
+                lines.add("matchingFlag: " + service.getMatchingFlag());
+                lines.add("현재 위치: " + service.getUserSectorNum());
+                lines.add("Way: " + service.getWay());
+                lines.add("NextWay: " + service.getNextWay());
+                lines.add("");
+
 
                 borderedText.drawLines(canvas, 10, canvas.getHeight() - 100, lines);
               }
@@ -1003,19 +1016,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // 현 Gps와 가장 가까운 sector 찾기
     double min = 4321.0;
     int idx = 0;
-    Log.e("min",  "idx: " + idx + ", min: " + min );
     for(int i=1; i <= DetectorActivity.this.service.getSectorArrayListSize(); i++){
       double lat = DetectorActivity.this.service.getMapdataFromIdx(i).getGPS().getDouble("latitude");
       double lon = DetectorActivity.this.service.getMapdataFromIdx(i).getGPS().getDouble("longitude");
-      Log.e("i",  "lat, lon: " + lat + ", " + lon);
       double dist = (DetectorActivity.this.service.getLatitude()-lat) * (DetectorActivity.this.service.getLatitude()-lat) + (DetectorActivity.this.service.getLongitude()-lon) * (DetectorActivity.this.service.getLongitude()-lon);
       if(dist < min){
         min = dist; // min값 변경
         idx = i; // 가장 가까운 위치의 Sector 번호 저장
       }
     }
-    Log.e("min",  "idx: " + DetectorActivity.this.service.getSectorArrayListSize());
-    Log.e("min",  "idx: " + idx + ", min: " + min );
+    DetectorActivity.this.service.setUserSectorNum(DetectorActivity.this.service.getMapdataFromIdx(idx).getIndex());
+
     // 가까운 Sector와 Path에서 nextSector의 번호 비교
     if(DetectorActivity.this.service.getMapdataFromIdx(idx).getIndex() == DetectorActivity.this.service.getCurrent_Sector().getIndex()){
       // 같다면 Instance 비교, 개수 반환
@@ -1059,21 +1070,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     // dot block이 있다면 섹터 여부 확인
     // 목적지 도착 2반환, 매칭만 된 경우 1반환, 매칭 안된 경우 0반환
-    int flag = -1;
-    if(dotFlag) flag = matchSector();
-    Log.e("matchingSector", "matchingSector: " + flag);
+    service.setMatchingFlag(-1);
+    if(dotFlag) service.setMatchingFlag(matchSector());
+    Log.e("matchingSector", "matchingSector: " + service.getMatchingFlag());
 
     // 목적지 도착 서비스 종료 TTS 구현
-    if(matchSector() == 2){
+    if(service.getMatchingFlag() == 2){
       // 아성이형 구현해주세요..
+      DetectorActivity.this.service.setNextWay("길찾기 서비스가 종료되었습니다.");
     }
 
     // 매칭 된 경우 방향 정하기
-    if(matchSector() == 1){
+    if(DetectorActivity.this.service.getMatchingFlag() == 1){
       // index 는 0~7, N 방향부터 시계방향으로
-      int index = sotwFormatter.whereUserGo(service.getAzimuth(), DetectorActivity.this.service.getWay());
+      int index = DetectorActivity.this.sotwFormatter.whereUserGo(DetectorActivity.this.service.getAzimuth(), DetectorActivity.this.service.getWay());
       // {"앞", "우측앞", "우", "우측뒤", "뒤", "좌측뒤", "좌", "좌측앞"} 으로 변환
-      String way = WAY[index];
+      DetectorActivity.this.service.setNextWay(WAY[index] + "으로 가세요. ");
       // 방향 TTS 구현 필요 아성이형 구현해주세요
     }
 

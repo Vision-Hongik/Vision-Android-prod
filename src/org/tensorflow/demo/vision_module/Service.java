@@ -17,9 +17,12 @@ public class Service {
     private String dest_Station;
     private String dest_Exit;
     private String way;
+    private String nextWay;
     private float azimuth;
     private int sectorArraySize;
     private boolean readyFlag;
+    private int matchingFlag;
+    private int userSectorNum;
 
     // 사용자가 현재 찾아갈 섹터
     private Sector current_Sector;
@@ -130,7 +133,7 @@ public class Service {
         // 이전 섹터에서 다음 섹터로 방향을 지정
         for(int i =0; i < sec.getAdjacentIdx().length(); i++){
             int adjacentIdx = (int) sec.getAdjacentIdx().get(i);
-            Log.e("way", "adjacentIdx, nextIdx ? " + adjacentIdx + getCurrent_Sector().getIndex() + ", way: " + sec.getAdjacentDir().get(i));
+            Log.e("way", "adjacentIdx, nextIdx ? " + adjacentIdx + ", " + getCurrent_Sector().getIndex() + ", way: " + sec.getAdjacentDir().get(i));
             if(adjacentIdx != getCurrent_Sector().getIndex()) continue;
 
             this.setWay((String)sec.getAdjacentDir().get(i));
@@ -161,6 +164,8 @@ public class Service {
     public Sector getCurrent_Sector() { return this.current_Sector; }
 
     public String getWay() { return way; }
+
+    public String getNextWay() { return nextWay; }
 
     public void setSectorArrayList(ArrayList<Sector> mapList){
         // 정렬 한 뒤에 넣는다.
@@ -199,9 +204,15 @@ public class Service {
         return this.sectorArrayList.get(index - 1);
     }
 
+    public int getMatchingFlag() { return matchingFlag; }
+
     public void setReadyFlag(boolean flag) {this.readyFlag = flag;}
 
     public void setWay(String way) { this.way = way; }
+
+    public void setNextWay(String nextWay) { this.nextWay = nextWay; }
+
+    public void setMatchingFlag(int matchingFlag) { this.matchingFlag = matchingFlag; }
 
     public boolean isReady(){
         if(this.sectorArrayList.isEmpty()){
@@ -231,7 +242,13 @@ public class Service {
         return num;
     }
 
+    public int getUserSectorNum() {
+        return userSectorNum;
+    }
 
+    public void setUserSectorNum(int userSectorNum) {
+        this.userSectorNum = userSectorNum;
+    }
 }
 
 
