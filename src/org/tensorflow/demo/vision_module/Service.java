@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class Service {
-
     private double longitude;
     private double latitude;
     private String source_Station;
@@ -23,6 +22,7 @@ public class Service {
     private boolean readyFlag;
     private int matchingFlag;
     private int userSectorNum;
+    public int score;
 
     // 사용자가 현재 찾아갈 섹터
     private Sector current_Sector;
@@ -239,6 +239,55 @@ public class Service {
         if(sec1.getOutSign() == sec2.getOutSign()) num++;
         if(sec1.getSign() == sec2.getSign()) num++;
         if(sec1.getGate() == sec2.getGate()) num++;
+        return num;
+    }
+
+    public void tt(){
+        this.num++;
+    }
+    public void tf(){
+        this.num--;
+    }
+    private int num = 0;
+    // 두 섹터의 13개 인스턴스 일치율 반환
+    public int compareInstance(Sector sec1, Sector sec2){
+        this.num = 0;
+        if(sec1.getLine() & sec2.getLine()) tt();
+        else if(sec1.getLine() != sec2.getLine()) tf();
+
+        if(sec1.getUpEscalator() & sec2.getUpEscalator()) tt();
+        else if(sec1.getUpEscalator() != sec2.getUpEscalator()) tf();
+
+        if(sec1.getDownEscalator() & sec2.getDownEscalator()) tt();
+        else if(sec1.getDownEscalator() != sec2.getDownEscalator()) tf();
+
+        if(sec1.getUpStair() & sec2.getUpStair()) tt();
+        else if(sec1.getUpStair() != sec2.getUpStair()) tf();
+
+        if(sec1.getDownStair() & sec2.getDownStair()) tt();
+        else if(sec1.getDownStair() != sec2.getDownStair()) tf();
+
+        if(sec1.getPillar() & sec2.getPillar()) tt();
+        else if(sec1.getPillar() != sec2.getPillar()) tf();
+
+        if(sec1.getBoard() & sec2.getBoard()) tt();
+        else if(sec1.getBoard() != sec2.getBoard()) tf();
+
+        if(sec1.getUpBoard() & sec2.getUpBoard()) tt();
+        else if(sec1.getUpBoard() != sec2.getUpBoard()) tf();
+
+        if(sec1.getInSign() & sec2.getInSign()) tt();
+        else if(sec1.getInSign() != sec2.getInSign()) tf();
+
+        if(sec1.getOutSign() & sec2.getOutSign()) tt();
+        else if(sec1.getOutSign() != sec2.getOutSign()) tf();
+
+        if(sec1.getSign() & sec2.getSign()) tt();
+        else if(sec1.getSign() != sec2.getSign()) tf();
+
+        if(sec1.getGate() & sec2.getGate()) tt();
+        else if(sec1.getGate() != sec2.getGate()) tf();
+
         return num;
     }
 
