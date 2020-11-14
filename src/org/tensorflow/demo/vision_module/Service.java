@@ -76,14 +76,16 @@ public class Service {
 
 
     // 경로 설정
-    public void setPath(){
-//        int Source_Sector_Idx = Integer.parseInt(source_Exit);
-//        int Dest_Sector_Idx;
-//        // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
-//        if(this.getSource_Station() != this.getDest_Station())
-//            Dest_Sector_Idx = 10;
-//        else
-//            Dest_Sector_Idx = Integer.parseInt(this.getDest_Exit());
+    public void setPath(String src, String dst){
+        int srcSector = Integer.parseInt(src);
+        int dstSector;
+
+        if(this.getSource_Station() != this.getDest_Station()) // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
+            dstSector = 10;
+        else
+            dstSector = Integer.parseInt(dst);
+
+        Log.e("src&dest", srcSector+","+ dstSector);
 
         //this.sectorArrayList
 

@@ -1113,7 +1113,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         DetectorActivity.this.service.setSectorArrayList(tmpMapdataList);
 
         // 경로 설정
-        DetectorActivity.this.service.setPath();
+        DetectorActivity.this.service.setPath(service.getSource_Exit(),service.getDest_Exit());
 
         //log 확인.
         Log.e("h", "Number of Sector : " + DetectorActivity.this.service.getSectorArrayList().size());
