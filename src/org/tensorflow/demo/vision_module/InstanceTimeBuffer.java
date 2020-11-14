@@ -6,10 +6,8 @@ import org.tensorflow.demo.Classifier;
 import org.tensorflow.demo.TensorFlowYoloDetector;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Set;
 
 
 public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
@@ -18,10 +16,12 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     private float bitmapHeight;
     private float bitmapWidth;
 
+    private int acumCount;
     public InstanceTimeBuffer(){
         super();
         this.bitmapHeight = 0;
         this.bitmapWidth = 0;
+        this.acumCount = 0;
     }
 
 
@@ -32,6 +32,8 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
         if(this.size() == maxSize) this.removeFirst();
         if(!this.isEmpty())
             syncInstanceBetweenPreNCur(this.getLast(),instanceHashTable);
+        this.acumCount++;
+        Log.e("InstanceTimeBuffer", "add : 누적개수: "+this.acumCount + " 현재 개수 :" +(this.size()+1));
         return super.add(instanceHashTable);
     }
 
@@ -40,7 +42,7 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
        Iterator it = curInstance.keySet().iterator();
        while(it.hasNext()){
            int key = (int)it.next();
-           if(preInstance.contains(key)){
+           if(preInstance.containsKey(key)){
                ArrayList<Classifier.Recognition> curSameClassArray = curInstance.get(key);
                ArrayList<Classifier.Recognition> preSameClassArray = preInstance.get(key);
                boolean [] synced = new boolean[14];
@@ -70,6 +72,9 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     public boolean checkSameInstance(Classifier.Recognition ins1,Classifier.Recognition ins2){
         if(ins1.getIdx() != ins2.getIdx()) return false; //같은 클래스가 아니면 거짓
 
+        Log.e("InstnaceBuffer", "checkSameInstance: recg " + ins1.getLocation() + " " + ins2.getLocation() );
+        Log.e("InstnaceBuffer", "checkSameInstance: left " + ins1.getLocation().left + " " + ins2.getLocation().left );
+        Log.e("InstnaceBuffer", "checkSameInstance: Center " + ins1.getLocation().centerX() + " " + ins2.getLocation().centerX() );
         float rowDistance = Math.abs(ins1.getLocation().centerX() - ins2.getLocation().centerX());
         float colDistance = Math.abs(ins1.getLocation().centerY() - ins2.getLocation().centerY());
         // 전체 비트맵 크기에 비해서, 너무 멀다면 false.
@@ -78,9 +83,13 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
             return false;
         }
 
-        if( rowDistance > this.bitmapWidth/4) return false;
+        Log.e("InstanceTimeBuffer", "checkSameInstance Differ: accumCount"+this.acumCount);
+        Log.e("InstanceTimeBuffer", "checkSameInstance Differ: 실제 가로" + rowDistance +", 기준 가로"+ (this.bitmapWidth/4));
+        Log.e("InstanceTimeBuffer", "checkSameInstance Differ: 실제 세로" + colDistance +", 기준 세로"+ (this.bitmapHeight/4));
+        if(rowDistance > this.bitmapWidth/4) return false;
         if(colDistance > this.bitmapHeight/4) return false;
 
+        Log.e("InstanceTimeBuffer", "checkSameInstance: True!!" + " "+ins2.getTitle() + " "+ins2.getTimeStamp());
         return true;
     }
 
@@ -94,4 +103,5 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     public float getBitmapHeight() { return bitmapHeight; }
     public void setBitmapHeight(float bitmapHeight) { this.bitmapHeight = bitmapHeight; }
 
+    public int getAcumCount() { return acumCount; }
 }

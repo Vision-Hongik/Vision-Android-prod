@@ -19,6 +19,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Trace;
+import android.util.Log;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 import org.tensorflow.demo.env.Logger;
@@ -202,7 +203,6 @@ public class TensorFlowYoloDetector implements Classifier {
                   Math.max(0, yPos - h / 2),
                   Math.min(bitmap.getWidth() - 1, xPos + w / 2),
                   Math.min(bitmap.getHeight() - 1, yPos + h / 2));
-//          Log.e("gridWidth", "=========================rect? : " + rect);
 //          Log.e("bitmap.getWidth()", "=========================bitmap.getWidth()? : " + bitmap.getWidth());
 //          Log.e("bitmap.getHeight", "=========================bitmap.getHeight()? : " + bitmap.getHeight());
           final float confidence = expit(output[offset + 4]);

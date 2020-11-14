@@ -10,14 +10,9 @@ public class InstanceHashTable extends Hashtable<Integer, ArrayList<Classifier.R
 
 
     //private InstanceMatrix matrix;
-    int matRowSize;
-    int matColSize;
-    public InstanceHashTable(int matRowSize,int matColSize){
+    public InstanceHashTable(){
         super();
-        this.matRowSize = matRowSize;
-        this.matColSize = matColSize;
-        //this.matrix = new InstanceMatrix();
-        //this.matrix.initMat(matRowSize,matColSize);
+
     }
 
     public void putRecog(Classifier.Recognition recognition){
@@ -26,5 +21,4 @@ public class InstanceHashTable extends Hashtable<Integer, ArrayList<Classifier.R
         //this.matrix.putRecog(recognition);
     }
 
-    //public InstanceMatrix getMatrix(){return this.matrix;}
 }

@@ -105,6 +105,13 @@ public interface Classifier {
       this.announced = announced;
     }
 
+    public Recognition clone(){
+      Recognition copyRecog = new Recognition(this.id, this.idx, this.title, this.confidence, this.location,this.bitmapWidth,this.bitmapHeight);
+      RectF coRect = new RectF(this.location.left,this.location.top,this.location.right,this.location.bottom);
+      copyRecog.setLocation(coRect);
+      return copyRecog;
+    }
+
     @Override
     public String toString() {
       String resultString = "";

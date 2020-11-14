@@ -28,6 +28,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.icu.text.Edits;
 import android.location.Location;
 import android.location.LocationListener;
 import android.media.ImageReader.OnImageAvailableListener;
@@ -280,7 +281,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 }
 
                 lines.add("");
-                lines.add("InstanceTimeBuffer");
+                lines.add("InstanceTimeBuffer" + instanceTimeBuffer.getAcumCount());
                 lines.add("");
 
                 if(!DetectorActivity.this.instanceTimeBuffer.isEmpty()) {
@@ -292,7 +293,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     ArrayList<Classifier.Recognition> recognitionArrayList =  lastInstanceBuffer.get(nKey);
                     for(int i = 0; i < recognitionArrayList.size(); i++) {
                       Classifier.Recognition recog = recognitionArrayList.get(i);
-                      lines.add(recog.getTitle() + " No."+i + " ("+ recog.getMatIdx(N,N).rowIdx + ","+recog.getMatIdx(N,N).colIdx+")");
+                      lines.add(recog.getTitle() + " No."+i +" TimeStamp:"+ recog.getTimeStamp() +" ("+ recog.getMatIdx(N,N).rowIdx + ","+recog.getMatIdx(N,N).colIdx+")");
                     }
                   }
 
@@ -380,8 +381,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             DetectorActivity.this.lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             if(bitmapHeight == 0 || bitmapWidth == 0) {
-              DetectorActivity.this.bitmapHeight = croppedBitmap.getHeight() - 1;
-              DetectorActivity.this.bitmapWidth = croppedBitmap.getWidth() - 1;
+              DetectorActivity.this.bitmapHeight = croppedBitmap.getHeight();
+              DetectorActivity.this.bitmapWidth = croppedBitmap.getWidth();
               Log.e("bitmapSize", "width: " + bitmapWidth );
               Log.e("bitmapSize", "height: " + bitmapWidth );
               instanceTimeBuffer.setBitmapHeight(DetectorActivity.this.bitmapHeight);
@@ -403,25 +404,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             // 일단은 그냥 아무거나 cropSignBitmap에 넣어보자
             // 제일 처음 뜬 instance crop!!
-            if(results.size() > 0) {
-              RectF cslocation = results.get(0).getLocation();
-              DetectorActivity.this.cropSignBitmap = cropBitmap(croppedBitmap,cslocation);
-            }
+//            if(results.size() > 0) {
+//              RectF cslocation = results.get(0).getLocation();
+//              DetectorActivity.this.cropSignBitmap = cropBitmap(croppedBitmap,cslocation);
+//            }
 
-//--------------------------------------Instance Time Buffer 추가 -----------------------------------
 
-            // Instance의 클래스 별로 Table 생성, 각 키별로 ArrayList..
-            InstanceHashTable curTimeInstance = new InstanceHashTable(N,N);
-            // 현재 발견된 instance를 Table화
-            for(final Classifier.Recognition result : results){
-              curTimeInstance.putRecog(result);
-            }
-            // instanceTimeBuffer는 자동으로 최대 사이즈(getMaxSize)를 유지한다.
-            instanceTimeBuffer.add(curTimeInstance);
-//----------------------------------------------------------------------------------------
-
-            for (final Classifier.Recognition result : results) {
+            for (final Classifier.Recognition resultb : results) {
               // dot block이 존재한다면 check
+              Classifier.Recognition result = resultb.clone();
               if(result.getIdx() == 0) dotFlag = true;
               curSector.setCurSector(result.getIdx());
 
@@ -439,6 +430,49 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //                Log.e("mappedRecognitions", "=========================mappedRecognitions? : " + mappedRecognitions + i);
               }
             }
+
+//--------------------------------------Instance Time Buffer 추가 -----------------------------------
+
+            // Instance의 클래스 별로 Table 생성, 각 키별로 ArrayList..
+            InstanceHashTable curTimeInstance = new InstanceHashTable();
+            // 현재 발견된 instance를 Table화
+            if(!results.isEmpty()) {
+              for (final Classifier.Recognition result : results) {
+                Log.e("Recg", "rRECg: Recog 렉트 보자 "+result.getLocation() + result.getTitle());
+                curTimeInstance.putRecog(result);
+              }
+
+              if(!instanceTimeBuffer.isEmpty()) {
+                InstanceHashTable lastInstanceBuffer = instanceTimeBuffer.getLast();
+                Iterator iterKey = lastInstanceBuffer.keySet().iterator();
+                while (iterKey.hasNext()) {
+                  int nKey = (int) iterKey.next();
+                  ArrayList<Classifier.Recognition> recognitionArrayList = lastInstanceBuffer.get(nKey);
+                  for (int i = 0; i < recognitionArrayList.size(); i++) {
+                    Classifier.Recognition recog = recognitionArrayList.get(i);
+                    Log.e("DetecInstanceT", "before Last "+ recog.getTitle() + " No." + i + " TimeStamp:" + recog.getTimeStamp() + " " + recog.getLocation());
+                  }
+                }
+              }
+
+              // instanceTimeBuffer는 자동으로 최대 사이즈(getMaxSize)를 유지한다.
+              instanceTimeBuffer.add(curTimeInstance);
+
+              if(!instanceTimeBuffer.isEmpty()) {
+                InstanceHashTable lastInstanceBuffer = instanceTimeBuffer.getLast();
+                Iterator iterKey = lastInstanceBuffer.keySet().iterator();
+                while (iterKey.hasNext()) {
+                  int nKey = (int) iterKey.next();
+                  ArrayList<Classifier.Recognition> recognitionArrayList = lastInstanceBuffer.get(nKey);
+                  for (int i = 0; i < recognitionArrayList.size(); i++) {
+                    Classifier.Recognition recog = recognitionArrayList.get(i);
+                    Log.e("DetecInstanceT", "After Last"+ recog.getTitle() + " No." + i + " TimeStamp:" + recog.getTimeStamp() + " " + recog.getLocation());
+                  }
+                }
+              }
+              Log.e("DetectorActivity", "instancLast accum: "+ instanceTimeBuffer.getAcumCount()+" " + instanceTimeBuffer.getLast().keySet());
+            }
+//----------------------------------------------------------------------------------------
 
 //          시간측정
             DetectorActivity.this.lastProcessingTimeMs1 += SystemClock.uptimeMillis() - startTime;
