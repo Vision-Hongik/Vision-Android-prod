@@ -35,7 +35,9 @@ public class SOTWFormatter {
         int iAzimuth = (int)azimuth;
         int userWay = sides[findClosestIndex(iAzimuth)];
         int nextWay = nameToSide(way);
-        return findClosestIndex((nextWay - userWay + 360) % 360);
+        int dis = (nextWay - userWay + 360) % 360;
+        int index = findClosestIndex(dis);
+        return index;
     }
 
     public int nameToSide(String name){

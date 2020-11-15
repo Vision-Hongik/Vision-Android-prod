@@ -312,19 +312,20 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 lines.add("Dst Station: " + service.getDest_Station());
                 lines.add("Dst Exit: " + service.getDest_Exit());
                 lines.add("");
-                String tmp = "Path";
-                for(Sector sec : service.getPath()){
-                  tmp = tmp + " -> " +sec.getIndex();
+                if(DetectorActivity.this.service.getSectorArrayList().size() > 0) {
+                  String tmp = "Path";
+                  for (Sector sec : service.getPath()) {
+                    tmp = tmp + " -> " + sec.getIndex();
+                  }
+                  lines.add(tmp);
+                  lines.add("Next Sector: " + service.getCurrent_Sector().getIndex());
+                  lines.add("matchingFlag: " + service.getMatchingFlag());
+                  lines.add("가장 근접한 sector: " + service.idx + ", Score: " + service.score);
+                  lines.add("현재 sector: " + service.getUserSectorNum());
+                  lines.add("Way: " + service.getWay());
+                  lines.add("NextWay: " + service.getNextWay());
+                  lines.add("");
                 }
-                lines.add(tmp);
-                lines.add("Next Sector: " + service.getCurrent_Sector().getIndex());
-                lines.add("matchingFlag: " + service.getMatchingFlag());
-                lines.add("Score: " + service.score);
-                lines.add("현재 sector: " + service.getUserSectorNum());
-                lines.add("Way: " + service.getWay());
-                lines.add("NextWay: " + service.getNextWay());
-                lines.add("");
-
 
                 borderedText.drawLines(canvas, 10, canvas.getHeight() - 100, lines);
               }
@@ -468,7 +469,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //          시간측정
             DetectorActivity.this.lastProcessingTimeMs1 += SystemClock.uptimeMillis() - startTime;
             //Log.e("Time", "=========================Time? : " + lastProcessingTimeMs1);
-            // 2초 지날때마다 갱신
+            // 3초 지날때마다 갱신
             if(DetectorActivity.this.lastProcessingTimeMs1 >= BUFFERTIME * 1000){
 
 
@@ -1007,30 +1008,35 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     DetectorActivity.this.service.score = -100;
     int idx = 0;
     for(int i=5; i <= DetectorActivity.this.service.getSectorArrayListSize(); i++){
+      if(i==6) continue;
       // i번째 Sector와 nextSector의 Instance들 비교해서 점수 반환
       int score = DetectorActivity.this.service.compareInstance(DetectorActivity.this.service.getMapdataFromIdx(i),
-              DetectorActivity.this.service.getCurrent_Sector());
+              curSector);
+      Log.e("score", i + "번째 score: " + score);
       if(DetectorActivity.this.service.score < score){
         DetectorActivity.this.service.score = score; // maxScore값 변경
         idx = i; // 가장 가까운 위치의 Sector 번호 저장
       }
     }
-
+    service.idx = idx;
+    DetectorActivity.this.service.setUserSectorNum(0);
     // Sector 맞다면
     if(DetectorActivity.this.service.score > 0) {
-      DetectorActivity.this.service.setUserSectorNum(DetectorActivity.this.service.getMapdataFromIdx(idx).getIndex());
-      // 가까운 Sector와 Path에서 nextSector의 번호 비교
-      if(DetectorActivity.this.service.setCurrentSectorToNext()) return 2;
-
-      // 매칭만 된 경우
-      return 1;
+      int current_Sector = DetectorActivity.this.service.getMapdataFromIdx(idx).getIndex();
+      DetectorActivity.this.service.setUserSectorNum(current_Sector);
+      if(current_Sector == DetectorActivity.this.service.getCurrent_Sector().getIndex()){
+        // 가까운 Sector와 Path에서 nextSector의 번호 비교
+        if(DetectorActivity.this.service.setCurrentSectorToNext()) return 2;
+        // 매칭만 된 경우
+        return 1;
+      }
     }
 
     // 매칭 안된 경우
     return 0;
   }
 
-  public static String[] WAY = {"앞", "우측앞", "우", "우측뒤", "뒤", "좌측뒤", "좌", "좌측앞"};
+  final public static String[] WAY = {"앞", "우측앞", "우", "우측뒤", "뒤", "좌측뒤", "좌", "좌측앞"};
 
   public void navigate() throws JSONException {
 
@@ -1063,17 +1069,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // 매칭 된 경우 방향 정하기
     if(DetectorActivity.this.service.getMatchingFlag() == 1){
       // index 는 0~7, N 방향부터 시계방향으로
-//      int index = DetectorActivity.this.sotwFormatter.whereUserGo(DetectorActivity.this.service.getAzimuth(), DetectorActivity.this.service.getWay());
-//      Log.e("wayIndex", "wayIndex: " + index + ", " + WAY[index]);
+      int index = DetectorActivity.this.sotwFormatter.whereUserGo(DetectorActivity.this.service.getAzimuth(), DetectorActivity.this.service.getWay());
+      Log.e("wayIndex", "wayIndex: " + index + ", " + WAY[index]);
 //      // {"앞", "우측앞", "우", "우측뒤", "뒤", "좌측뒤", "좌", "좌측앞"} 으로 변환
 //      DetectorActivity.this.service.setNextWay(WAY[index] + "으로 가세요. ");
-      // 방향 TTS 구현 필요 아성이형 구현해주세요
+      DetectorActivity.this.service.setNextWay("matching 되었습니다!" + WAY[index] + "으로 가세요. ");
+      voice.TTS("" + WAY[index] + "으로 가세요.");
     }
 
     // 목적지 도착 서비스 종료 TTS 구현
-    if(service.getMatchingFlag() == 2){
-      // 아성이형 구현해주세요..
+    else if(service.getMatchingFlag() == 2){
+      voice.TTS("좌측 합정방향입니다.");
       DetectorActivity.this.service.setNextWay("길찾기 서비스가 종료되었습니다.");
+    }
+    else{
+      DetectorActivity.this.service.setNextWay("길찾기 중...");
     }
   }
 
@@ -1189,7 +1199,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //        }
 //      });
 
-      //서비스를 위한 초기화 작업 시작
+//      //서비스를 위한 초기화 작업 시작
       initService(initCompletedStatus, new MyCallback() {
         @Override
         public void callback() {
@@ -1204,7 +1214,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
       });
 
-      //debugSangsuMapdata();
+//      debugSangsuMapdata();
 
       return true;
     }
