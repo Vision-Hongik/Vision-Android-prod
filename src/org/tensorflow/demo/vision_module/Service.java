@@ -78,7 +78,7 @@ public class Service {
         JSONArray adjacent_idx;
         ArrayList<Integer> adj_idx_list = new ArrayList<Integer> ();
 
-        adjacent_idx = this.getSectorArrayList().get(sector_idx).getAdjacentIdx();
+        adjacent_idx = this.getSectorArrayList().get(sector_idx-1).getAdjacentIdx();
         for(int i =0; i < adjacent_idx.length(); i++) {
             int adjacentIdx = (int) adjacent_idx.get(i);
             adj_idx_list.add(adjacentIdx);
@@ -90,41 +90,31 @@ public class Service {
     public void DFS(int src, int dst) throws JSONException {
         int temp=0, visit=src;
         ArrayList adj_idx_list = new ArrayList<Integer> ();
+
         adj_idx_list = searchAdjacentList(visit);
+        for(int j =0; j < adj_idx_list.size(); ++j) {
+            Log.e("visit/adj_list", visit+"/"+String.valueOf((int) adj_idx_list.get(j)));
+        }
 
-
-        if(visit != dst) {
+            if(visit != dst) {
             if(adj_idx_list.size() == 1) {
-                Log.e("sss", String.valueOf((int) adj_idx_list.get(0)));
+                Log.e("인접섹터가 1개이고 idx는", String.valueOf((int) adj_idx_list.get(0)));
                 visit = (int) adj_idx_list.get(0);
+                Log.e("인접섹터 1개일떄 visit은", String.valueOf(visit));
             }
             else {
                 for(int i =0; i < adj_idx_list.size(); ++i) {
-                    if (temp < (int) adj_idx_list.get(i)) temp = (int) adj_idx_list.get(i);
+                    Log.e("인접섹터 여러개이고 idx는", String.valueOf((int) adj_idx_list.get(i)));
+                    if (temp < (int) adj_idx_list.get(i )) temp = (int) adj_idx_list.get(i);
                 }
+                Log.e("temp값은", String.valueOf(temp));
                 visit = temp;
             }
             this.path.add(this.getMapdataFromIdx(visit));
             Log.e("path 원소수", String.valueOf(this.path.size()));
             DFS(visit, dst);
         }
-        this.path.add(this.getMapdataFromIdx(visit));
-        Log.e("dfs 마지막 push visit", String.valueOf(visit));
     }
-
-//        while(visit != dst) {
-//            adj_idx_list = searchAdjacentList(visit);
-//            for(int i =0; i < adj_idx_list.size(); i++) {
-//                visit = (int) adj_idx_list.get(i);
-//                if(adj_idx_list.size() == 1) {
-//                    this.path.add(this.getMapdataFromIdx(visit));
-//                }
-//                else {
-//                    DFS(visit, dst);
-//                }
-//            }
-//
-//        }
 
     // 경로 설정
     public void setPath(String src, String dst) throws JSONException {
