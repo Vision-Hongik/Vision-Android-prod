@@ -24,6 +24,7 @@ public class Service {
     private boolean readyFlag;
     private int matchingFlag;
     private int userSectorNum;
+    private int navigateDirectionFlag;
 
     // 사용자가 현재 찾아갈 섹터
     private Sector current_Sector;
@@ -87,64 +88,80 @@ public class Service {
         return adj_idx_list;
     }
 
-    public void DFS(int src, int dst) throws JSONException {
+    public void BFS_toSubway(int src, int dst) throws JSONException {
         int temp=0, visit=src;
         ArrayList adj_idx_list = new ArrayList<Integer> ();
-
         adj_idx_list = searchAdjacentList(visit);
-        for(int j =0; j < adj_idx_list.size(); ++j) {
-            Log.e("visit/adj_list", visit+"/"+String.valueOf((int) adj_idx_list.get(j)));
-        }
 
-            if(visit != dst) {
+        if(visit != dst)
+        {
             if(adj_idx_list.size() == 1) {
-                Log.e("인접섹터가 1개이고 idx는", String.valueOf((int) adj_idx_list.get(0)));
                 visit = (int) adj_idx_list.get(0);
-                Log.e("인접섹터 1개일떄 visit은", String.valueOf(visit));
             }
             else {
                 for(int i =0; i < adj_idx_list.size(); ++i) {
-                    Log.e("인접섹터 여러개이고 idx는", String.valueOf((int) adj_idx_list.get(i)));
                     if (temp < (int) adj_idx_list.get(i )) temp = (int) adj_idx_list.get(i);
                 }
-                Log.e("temp값은", String.valueOf(temp));
                 visit = temp;
             }
             this.path.add(this.getMapdataFromIdx(visit));
-            Log.e("path 원소수", String.valueOf(this.path.size()));
-            DFS(visit, dst);
+            BFS_toSubway(visit, dst);
         }
     }
 
+    public void BFS_toExit(int src, int dst) throws JSONException {
+        int temp=100, visit=src;
+        ArrayList adj_idx_list = new ArrayList<Integer> ();
+        adj_idx_list = searchAdjacentList(visit);
+
+        if(visit != dst)
+        {
+            if(adj_idx_list.size() == 1) {
+                visit = (int) adj_idx_list.get(0);
+            }
+            else {
+                for(int i =0; i < adj_idx_list.size(); ++i) {
+                    if (temp > (int) adj_idx_list.get(i )) temp = (int) adj_idx_list.get(i);
+                }
+                visit = temp;
+            }
+            this.path.add(this.getMapdataFromIdx(visit));
+            BFS_toExit(visit, dst);
+        }
+    }
     // 경로 설정
     public void setPath(String src, String dst) throws JSONException {
-        ArrayList<Integer> adj_idx_list = new ArrayList<Integer> ();
-
-        int srcSector = Integer.parseInt(src);
+//        int srcSector = Integer.parseInt(src);
+        int srcSector = 10;
         int dstSector;
 
         if(this.getSource_Station() != this.getDest_Station()) // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
-            dstSector = 10;
-        else
-            dstSector = Integer.parseInt(dst);
-        Log.e("src&dest", "SetPath 시작:::" + srcSector+","+ dstSector);
+            dstSector = 1;
+        else  dstSector = Integer.parseInt(dst);
+        Log.e("setPath 시작", "src: " + srcSector+",   dst: "+ dstSector);
 
-        // 소현이가 구현하기 전까지 스태틱으로 하겠슴니더..
-        {
-            this.path.add(this.getMapdataFromIdx(srcSector) ); // 시작 출구
+        /* navigateDirectionFlag:
+         출구에서 탑승장 방향으로 갈때 1,
+         출발지=도착지 즉 이동할 게 없을때 0
+        탑승장에서 출구로 갈때 -1 */
+        navigateDirectionFlag = Integer.compare((dstSector - srcSector), 0);
+        Log.e("navigateDirectionFlag값", String.valueOf(navigateDirectionFlag));
+        this.path.add(this.getMapdataFromIdx(srcSector) ); // 시작 출구
+
+        if (navigateDirectionFlag>= 0) {
             try {
-                DFS(srcSector, dstSector);
+                BFS_toSubway(srcSector, dstSector);
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
-
         }
-//        this.path.add(this.getMapdataFromIdx(5) );
-//        this.path.add(this.getMapdataFromIdx(7) );
-//        this.path.add(this.getMapdataFromIdx(8) );
-//        this.path.add(this.getMapdataFromIdx(9) );
-//        this.path.add(this.getMapdataFromIdx(10) ); // 탑승장
-
+        else {
+            try {
+                BFS_toExit(srcSector, dstSector);
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
+        }
         this.setCurrent_Sector(1); // 현재 Sector를 시작 출구 다음 Sector로 지정 ex) 5번 Sector
     }
 
