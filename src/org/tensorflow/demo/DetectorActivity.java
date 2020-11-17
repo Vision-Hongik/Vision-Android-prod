@@ -1197,21 +1197,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //      });
 
       //서비스를 위한 초기화 작업 시작
-//      initService(initCompletedStatus, new MyCallback() {
-//        @Override
-//        public void callback() {
-//          Log.e("n", "Navigate 시작" );
-//          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
-//          service.setReadyFlag(true);
-//        }
-//
-//        @Override
-//        public void callbackBundle(Bundle result) {
-//
-//        }
-//      });
+      initService(initCompletedStatus, new MyCallback() {
+        @Override
+        public void callback() {
+          Log.e("n", "Navigate 시작" );
+          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
+          service.setReadyFlag(true);
+        }
 
-      debugSangsuMapdata();
+        @Override
+        public void callbackBundle(Bundle result) {
+
+        }
+      });
+
+//      debugSangsuMapdata();
 
       return true;
     }
@@ -1221,9 +1221,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   public void debugSangsuMapdata(){
     service.setDest_Station("상수");
-    service.setSource_Station("상수");
-    service.setSource_Exit("1");
-    service.setDest_Exit("4");
+    service.setSource_Station("합정");
+    service.setSource_Exit("2");
+    service.setDest_Exit("3");
     getMapData_To_Service_From_Server("sangsu", new MyCallback() {
       @Override
       public void callback() {

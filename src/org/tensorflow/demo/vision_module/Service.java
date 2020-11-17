@@ -92,7 +92,7 @@ public class Service {
     }
 
     public void BFS_WithShortestPath(int src, int dst) throws JSONException {
-
+        Log.e("setPath 시작", "src: " + src+",   dst: "+ dst);
         /* 필요한 변수 선언부 */
         int v=src, node=0;
         int[] visited= new int[10];  // 노드 방문 여부를 표현하는 배열 (실제 인덱스는 idx-1)
@@ -115,37 +115,44 @@ public class Service {
             for(int i =0; i < adj_idx_list.size(); ++i) {
                 node = (int) adj_idx_list.get(i);
                 if(visited[node-1] == 0) {
-                    visited[node-1] =1;
+                    visited[node-1] = 1;
                     queue.add(node);
                     pathStack.add(node);
+                    Log.e("pathStack", "pathStack.add("+node+")");
                     if(v == dst) {
                         queue.add(dst);
-                        pathStack.add(dst);
-                        break;}
+                        break;
+                    }
                 }
             }
         }
 
+        //예시결과로... BFS(src=1일때): 1 5 2 7 6 8 3 4 9 10
 
         /* 최단 경로 구하기:
             BFS 실행결과를 담은 stack 활용 */
         int pathNode = 0, currentSrc=dst; //별도의 변수 선언
+        ArrayList<Integer> shortest_path_reversed = new ArrayList<Integer> ();
+        int temp_idx= pathStack.search(dst);
+//        Log.e("temp_idx", String.valueOf(temp_idx));
+        for (int k=0; k < (temp_idx -1); k++) pathStack.pop();
 
-        int temp_idx= pathStack.search(dst); //7 of 9
-        for (int k=1; k<(pathStack.size() - temp_idx); k++) pathStack.pop();
-        while(!pathStack.isEmpty())
-        {
+        while(!pathStack.isEmpty()) { // 최단경로 구하기
             pathNode = pathStack.pop();
             if(searchAdjacentList(currentSrc).contains(pathNode)) {
-                this.path.add(this.getMapdataFromIdx(currentSrc));
+                shortest_path_reversed.add(currentSrc);
                 currentSrc = pathNode;
                 if(pathNode == src){
-                    this.path.add(this.getMapdataFromIdx(pathNode));
+                    shortest_path_reversed.add(pathNode);
                     break;
                 }
             }
         }
 
+        for (int j=0; j<(shortest_path_reversed.size()); j++) {
+            int push_idx = shortest_path_reversed.get(shortest_path_reversed.size()-j-1);
+            this.path.add(this.getMapdataFromIdx(push_idx));
+        } //최종 path를 stack에서 꺼내 sector array에 add
     }
 
 //    public void DFS_toSubway(int src, int dst) throws JSONException {
@@ -177,13 +184,13 @@ public class Service {
         if(this.getSource_Station() != this.getDest_Station()) // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
             dstSector = 10;
         else  dstSector = Integer.parseInt(dst);
-        Log.e("setPath 시작", "src: " + srcSector+",   dst: "+ dstSector);
 
         try {
-             BFS_WithShortestPath(srcSector, dstSector); //최단거리를 stack으로 구현해서 출발&도착지를 switch해야...........
+             BFS_WithShortestPath(srcSector, dstSector);
         } catch (IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
+
         this.setCurrent_Sector(1); // 현재 Sector를 시작 출구 다음 Sector로 지정 ex) 5번 Sector
     }
 
