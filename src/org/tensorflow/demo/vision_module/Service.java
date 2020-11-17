@@ -8,6 +8,9 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Stack;
 
 public class Service {
 
@@ -24,7 +27,6 @@ public class Service {
     private boolean readyFlag;
     private int matchingFlag;
     private int userSectorNum;
-    private int navigateDirectionFlag;
 
     // 사용자가 현재 찾아갈 섹터
     private Sector current_Sector;
@@ -75,6 +77,7 @@ public class Service {
         // 방향물어보면 자이로. 최후의 수단 교수님이 욕을하면,,,,
     }
 
+    // 한 노드의 인접노드 array_list를 구하는 메소드
     public ArrayList searchAdjacentList(int sector_idx) throws JSONException {
         JSONArray adjacent_idx;
         ArrayList<Integer> adj_idx_list = new ArrayList<Integer> ();
@@ -88,79 +91,98 @@ public class Service {
         return adj_idx_list;
     }
 
-    public void BFS_toSubway(int src, int dst) throws JSONException {
-        int temp=0, visit=src;
-        ArrayList adj_idx_list = new ArrayList<Integer> ();
-        adj_idx_list = searchAdjacentList(visit);
+    public void BFS_WithShortestPath(int src, int dst) throws JSONException {
 
-        if(visit != dst)
-        {
-            if(adj_idx_list.size() == 1) {
-                visit = (int) adj_idx_list.get(0);
-            }
-            else {
-                for(int i =0; i < adj_idx_list.size(); ++i) {
-                    if (temp < (int) adj_idx_list.get(i )) temp = (int) adj_idx_list.get(i);
+        /* 필요한 변수 선언부 */
+        int v=src, node=0;
+        int[] visited= new int[10];  // 노드 방문 여부를 표현하는 배열 (실제 인덱스는 idx-1)
+                                     // 임의의 지하철역의 sector 갯수는 최대 10개로 제한, 초기값=0
+        ArrayList adj_idx_list; // 인접 노드 검색을 위한 array list
+        Queue<Integer> queue = new LinkedList<Integer>(); // bfs 전체 path를 위한 queue
+        Stack<Integer> pathStack = new Stack<Integer>(); // 최단거리 구하기 위한 stack
+
+        /* BFS 시작을 위한 초기화:
+            자료구조에 출발지(src) push 및 visited=true로 표시 */
+        queue.add(v);
+        pathStack.add(v);
+        visited[v-1] =1;
+
+        /* BFS 실행 */
+        while(queue.size() != 0) {
+            v = queue.poll();
+            adj_idx_list = searchAdjacentList(v);
+
+            for(int i =0; i < adj_idx_list.size(); ++i) {
+                node = (int) adj_idx_list.get(i);
+                if(visited[node-1] == 0) {
+                    visited[node-1] =1;
+                    queue.add(node);
+                    pathStack.add(node);
+                    if(v == dst) {
+                        queue.add(dst);
+                        pathStack.add(dst);
+                        break;}
                 }
-                visit = temp;
             }
-            this.path.add(this.getMapdataFromIdx(visit));
-            BFS_toSubway(visit, dst);
         }
+
+
+        /* 최단 경로 구하기:
+            BFS 실행결과를 담은 stack 활용 */
+        int pathNode = 0, currentSrc=dst; //별도의 변수 선언
+
+        int temp_idx= pathStack.search(dst); //7 of 9
+        for (int k=1; k<(pathStack.size() - temp_idx); k++) pathStack.pop();
+        while(!pathStack.isEmpty())
+        {
+            pathNode = pathStack.pop();
+            if(searchAdjacentList(currentSrc).contains(pathNode)) {
+                this.path.add(this.getMapdataFromIdx(currentSrc));
+                currentSrc = pathNode;
+                if(pathNode == src){
+                    this.path.add(this.getMapdataFromIdx(pathNode));
+                    break;
+                }
+            }
+        }
+
     }
 
-    public void BFS_toExit(int src, int dst) throws JSONException {
-        int temp=100, visit=src;
-        ArrayList adj_idx_list = new ArrayList<Integer> ();
-        adj_idx_list = searchAdjacentList(visit);
+//    public void DFS_toSubway(int src, int dst) throws JSONException {
+//        int temp=0, visit=src;
+//        ArrayList adj_idx_list = new ArrayList<Integer> ();
+//        adj_idx_list = searchAdjacentList(visit);
+//
+//        if(visit != dst)
+//        {
+//            if(adj_idx_list.size() == 1) {
+//                visit = (int) adj_idx_list.get(0);
+//            }
+//            else {
+//                for(int i =0; i < adj_idx_list.size(); ++i) {
+//                    if (temp < (int) adj_idx_list.get(i )) temp = (int) adj_idx_list.get(i);
+//                }
+//                visit = temp;
+//            }
+//            this.path.add(this.getMapdataFromIdx(visit));
+//            BFS_toSubway(visit, dst);
+//        }
+//    }
 
-        if(visit != dst)
-        {
-            if(adj_idx_list.size() == 1) {
-                visit = (int) adj_idx_list.get(0);
-            }
-            else {
-                for(int i =0; i < adj_idx_list.size(); ++i) {
-                    if (temp > (int) adj_idx_list.get(i )) temp = (int) adj_idx_list.get(i);
-                }
-                visit = temp;
-            }
-            this.path.add(this.getMapdataFromIdx(visit));
-            BFS_toExit(visit, dst);
-        }
-    }
     // 경로 설정
     public void setPath(String src, String dst) throws JSONException {
-//        int srcSector = Integer.parseInt(src);
-        int srcSector = 10;
+        int srcSector = Integer.parseInt(src);
         int dstSector;
 
         if(this.getSource_Station() != this.getDest_Station()) // 다른역으로 간다면 탑승장 Sector번호까지 목적지로 설정
-            dstSector = 1;
+            dstSector = 10;
         else  dstSector = Integer.parseInt(dst);
         Log.e("setPath 시작", "src: " + srcSector+",   dst: "+ dstSector);
 
-        /* navigateDirectionFlag:
-         출구에서 탑승장 방향으로 갈때 1,
-         출발지=도착지 즉 이동할 게 없을때 0
-        탑승장에서 출구로 갈때 -1 */
-        navigateDirectionFlag = Integer.compare((dstSector - srcSector), 0);
-        Log.e("navigateDirectionFlag값", String.valueOf(navigateDirectionFlag));
-        this.path.add(this.getMapdataFromIdx(srcSector) ); // 시작 출구
-
-        if (navigateDirectionFlag>= 0) {
-            try {
-                BFS_toSubway(srcSector, dstSector);
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-            try {
-                BFS_toExit(srcSector, dstSector);
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
-            }
+        try {
+             BFS_WithShortestPath(srcSector, dstSector); //최단거리를 stack으로 구현해서 출발&도착지를 switch해야...........
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
         }
         this.setCurrent_Sector(1); // 현재 Sector를 시작 출구 다음 Sector로 지정 ex) 5번 Sector
     }

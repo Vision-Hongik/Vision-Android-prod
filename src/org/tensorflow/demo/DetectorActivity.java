@@ -1220,10 +1220,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 
   public void debugSangsuMapdata(){
-    service.setDest_Station("합정");
+    service.setDest_Station("상수");
     service.setSource_Station("상수");
-    service.setSource_Exit("2");
-    service.setDest_Exit("3");
+    service.setSource_Exit("1");
+    service.setDest_Exit("4");
     getMapData_To_Service_From_Server("sangsu", new MyCallback() {
       @Override
       public void callback() {
