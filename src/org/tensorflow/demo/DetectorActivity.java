@@ -1021,20 +1021,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   public void navigate() throws JSONException {
 
-    for(int i=0; i<N; i++){
-      for(int j=0; j<N; j++){
-        int idx = (i*N) + j;
-        Set keySet = instanceMatrix.get(idx).keySet();
-        Iterator iterKey = keySet.iterator();
-        String tmp = i + " * " + j + " 분면: ";
-        while(iterKey.hasNext()){
-          int nKey = (int) iterKey.next();
-
-          //Log.e("NavigateLog",  tmp + instanceBuffer.get(idx).get(nKey));
-        }
-      }
-    }
-
     // 각 스텝은 몇초마다 실행될지도 정해야할듯?
     // 전부 3초마다 매번 실행되면 앱이 너무 시끄러울듯!
 

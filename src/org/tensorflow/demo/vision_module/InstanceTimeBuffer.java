@@ -1,5 +1,6 @@
 package org.tensorflow.demo.vision_module;
 
+import android.icu.text.Edits;
 import android.util.Log;
 
 import org.tensorflow.demo.Classifier;
@@ -30,8 +31,8 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     @Override
     public boolean add(InstanceHashTable instanceHashTable) {
         if(this.size() == maxSize) this.removeFirst();
-        if(!this.isEmpty())
-            syncInstanceBetweenPreNCur(this.getLast(),instanceHashTable);
+        if(!this.isEmpty()) syncInstanceBetweenPreNCur(this.getLast(),instanceHashTable);
+        if(this.size() >= 2) syncInstanceBetweenPreNCur(this.get(this.size()-2),instanceHashTable);
         this.acumCount++;
         //Log.e("InstanceTimeBuffer", "add : 누적개수: "+this.acumCount + " 현재 개수 :" +(this.size()+1));
         return super.add(instanceHashTable);
@@ -48,6 +49,7 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
                boolean [] synced = new boolean[14];
                // 각 Recog별로 이전 Recog들과 위치를 비교한다.
                for(int i=0; i < curSameClassArray.size(); i++){
+                  if( curSameClassArray.get(i).isInherited()) continue;
                    for(int j=0; j < preSameClassArray.size(); j++){
 
                        if(synced[j]) continue; //이미 짝지어짐
@@ -58,12 +60,10 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
                             curSameClassArray.get(i).setAnnounced(preSameClassArray.get(j).isAnnounced());
                             curSameClassArray.get(i).setTimeStamp(preSameClassArray.get(j).getTimeStamp()+1);
                             curSameClassArray.get(i).setId(preSameClassArray.get(j).getId());
+                            curSameClassArray.get(i).setInherited(true);
                         }
-
                    }
-
                }
-
            }
        }
     }
@@ -90,10 +90,14 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
         return true;
     }
 
+    public ArrayList<Classifier.Recognition> getAnnouncealbeInstance(){
+        ArrayList<Classifier.Recognition> announceableList = new ArrayList<>();
+        return announceableList;
+    }
+
 
     public int getMaxSize(){return this.maxSize;}
     public void setMaxSize(int ms) {this.maxSize = ms;}
-
     public float getBitmapWidth() { return bitmapWidth; }
     public void setBitmapWidth(float bitmapWidth) { this.bitmapWidth = bitmapWidth; }
 

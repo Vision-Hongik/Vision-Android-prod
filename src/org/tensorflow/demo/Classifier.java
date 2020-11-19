@@ -56,6 +56,7 @@ public interface Classifier {
     private int count;
     private boolean announced;
     private int timeStamp;
+    private boolean inherited;
 
     public Recognition(
         final String id, final int idx, final String title, final Float confidence, final RectF location,float bitmapWidth,float bitmapHeight) {
@@ -69,6 +70,7 @@ public interface Classifier {
       timeStamp = 0;
       this.bitmapWidth = bitmapWidth;
       this.bitmapHeight = bitmapHeight;
+      this.inherited = false;
     }
 
     public String getId() { return id; }
@@ -104,6 +106,10 @@ public interface Classifier {
     public void setAnnounced(boolean announced) {
       this.announced = announced;
     }
+
+    public void setInherited(boolean inherited) { this.inherited = inherited; }
+
+    public boolean isInherited() { return inherited; }
 
     public Recognition clone(){
       Recognition copyRecog = new Recognition(this.id, this.idx, this.title, this.confidence, this.location,this.bitmapWidth,this.bitmapHeight);
