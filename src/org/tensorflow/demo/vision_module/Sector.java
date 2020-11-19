@@ -76,6 +76,7 @@ public class Sector {
 
     public Sector(JSONObject job){
         try {
+
             this.id = job.getString("_id");
             this.name = job.getString("name");
             this.type = job.getString("type");
