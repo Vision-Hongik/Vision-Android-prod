@@ -33,7 +33,7 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
         if(!this.isEmpty())
             syncInstanceBetweenPreNCur(this.getLast(),instanceHashTable);
         this.acumCount++;
-        Log.e("InstanceTimeBuffer", "add : 누적개수: "+this.acumCount + " 현재 개수 :" +(this.size()+1));
+        //Log.e("InstanceTimeBuffer", "add : 누적개수: "+this.acumCount + " 현재 개수 :" +(this.size()+1));
         return super.add(instanceHashTable);
     }
 
@@ -72,9 +72,6 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     public boolean checkSameInstance(Classifier.Recognition ins1,Classifier.Recognition ins2){
         if(ins1.getIdx() != ins2.getIdx()) return false; //같은 클래스가 아니면 거짓
 
-        Log.e("InstnaceBuffer", "checkSameInstance: recg " + ins1.getLocation() + " " + ins2.getLocation() );
-        Log.e("InstnaceBuffer", "checkSameInstance: left " + ins1.getLocation().left + " " + ins2.getLocation().left );
-        Log.e("InstnaceBuffer", "checkSameInstance: Center " + ins1.getLocation().centerX() + " " + ins2.getLocation().centerX() );
         float rowDistance = Math.abs(ins1.getLocation().centerX() - ins2.getLocation().centerX());
         float colDistance = Math.abs(ins1.getLocation().centerY() - ins2.getLocation().centerY());
         // 전체 비트맵 크기에 비해서, 너무 멀다면 false.

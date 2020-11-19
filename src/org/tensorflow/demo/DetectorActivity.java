@@ -438,38 +438,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             // 현재 발견된 instance를 Table화
             if(!results.isEmpty()) {
               for (final Classifier.Recognition result : results) {
-                Log.e("Recg", "rRECg: Recog 렉트 보자 "+result.getLocation() + result.getTitle());
                 curTimeInstance.putRecog(result);
-              }
-
-              if(!instanceTimeBuffer.isEmpty()) {
-                InstanceHashTable lastInstanceBuffer = instanceTimeBuffer.getLast();
-                Iterator iterKey = lastInstanceBuffer.keySet().iterator();
-                while (iterKey.hasNext()) {
-                  int nKey = (int) iterKey.next();
-                  ArrayList<Classifier.Recognition> recognitionArrayList = lastInstanceBuffer.get(nKey);
-                  for (int i = 0; i < recognitionArrayList.size(); i++) {
-                    Classifier.Recognition recog = recognitionArrayList.get(i);
-                    Log.e("DetecInstanceT", "before Last "+ recog.getTitle() + " No." + i + " TimeStamp:" + recog.getTimeStamp() + " " + recog.getLocation());
-                  }
-                }
               }
 
               // instanceTimeBuffer는 자동으로 최대 사이즈(getMaxSize)를 유지한다.
               instanceTimeBuffer.add(curTimeInstance);
 
-              if(!instanceTimeBuffer.isEmpty()) {
-                InstanceHashTable lastInstanceBuffer = instanceTimeBuffer.getLast();
-                Iterator iterKey = lastInstanceBuffer.keySet().iterator();
-                while (iterKey.hasNext()) {
-                  int nKey = (int) iterKey.next();
-                  ArrayList<Classifier.Recognition> recognitionArrayList = lastInstanceBuffer.get(nKey);
-                  for (int i = 0; i < recognitionArrayList.size(); i++) {
-                    Classifier.Recognition recog = recognitionArrayList.get(i);
-                    Log.e("DetecInstanceT", "After Last"+ recog.getTitle() + " No." + i + " TimeStamp:" + recog.getTimeStamp() + " " + recog.getLocation());
-                  }
-                }
-              }
               Log.e("DetectorActivity", "instancLast accum: "+ instanceTimeBuffer.getAcumCount()+" " + instanceTimeBuffer.getLast().keySet());
             }
 //----------------------------------------------------------------------------------------
