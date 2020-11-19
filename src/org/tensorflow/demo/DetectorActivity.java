@@ -1098,32 +1098,36 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         DetectorActivity.this.service.setSectorArrayList(tmpMapdataList);
 
         // 경로 설정
-        DetectorActivity.this.service.setPath();
+        try {
+          DetectorActivity.this.service.setPath(service.getSource_Exit(),service.getDest_Exit());
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
 
         //log 확인.
-        Log.e("h", "Number of Sector : " + DetectorActivity.this.service.getSectorArrayList().size());
-        for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++) {
-          Log.e("DB", "onResponse Name: " +service.getSectorArrayList().get(i).getName());
-          Log.e("DB", "onResponse ID: " + service.getSectorArrayList().get(i).getId());
-          Log.e("DB", "onResponse type: " + service.getSectorArrayList().get(i).getType());
-          Log.e("DB", "onResponse index: " + service.getSectorArrayList().get(i).getIndex());
-          Log.e("DB", "onResponse dot: " + service.getSectorArrayList().get(i).getDot());
-          Log.e("DB", "onResponse Line: " + service.getSectorArrayList().get(i).getLine());
-          Log.e("DB", "onResponse upEscalator: " + service.getSectorArrayList().get(i).getUpEscalator());
-          Log.e("DB", "onResponse downEscalator: " + service.getSectorArrayList().get(i).getDownEscalator());
-          Log.e("DB", "onResponse upStair: " + service.getSectorArrayList().get(i).getUpStair());
-          Log.e("DB", "onResponse downStair: " + service.getSectorArrayList().get(i).getDownStair());
-          Log.e("DB", "onResponse pillar: " + service.getSectorArrayList().get(i).getPillar());
-          Log.e("DB", "onResponse Board: " + service.getSectorArrayList().get(i).getBoard());
-          Log.e("DB", "onResponse upBoard: " + service.getSectorArrayList().get(i).getUpBoard());
-          Log.e("DB", "onResponse subwayTracks: " + service.getSectorArrayList().get(i).getSubwayTracks());
-          Log.e("DB", "onResponse inSign: " + service.getSectorArrayList().get(i).getInSign());
-          Log.e("DB", "onResponse outSign: " + service.getSectorArrayList().get(i).getOutSign());
-          Log.e("DB", "onResponse Gate: " + service.getSectorArrayList().get(i).getGate());
-          Log.e("DB", "onResponse GPS: " + service.getSectorArrayList().get(i).getGPS() + "\n");
-          Log.e("DB", "onResponse 이웃섹터 idx: " + service.getSectorArrayList().get(i).getAdjacentIdx() + "\n");
-          Log.e("DB", "onResponse 이웃섹터 direction: " + service.getSectorArrayList().get(i).getAdjacentDir() + "\n");
-        }
+//        Log.e("h", "Number of Sector : " + DetectorActivity.this.service.getSectorArrayList().size());
+//        for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++) {
+//          Log.e("DB", "onResponse Name: " +service.getSectorArrayList().get(i).getName());
+//          Log.e("DB", "onResponse ID: " + service.getSectorArrayList().get(i).getId());
+//          Log.e("DB", "onResponse type: " + service.getSectorArrayList().get(i).getType());
+//          Log.e("DB", "onResponse index: " + service.getSectorArrayList().get(i).getIndex());
+//          Log.e("DB", "onResponse dot: " + service.getSectorArrayList().get(i).getDot());
+//          Log.e("DB", "onResponse Line: " + service.getSectorArrayList().get(i).getLine());
+//          Log.e("DB", "onResponse upEscalator: " + service.getSectorArrayList().get(i).getUpEscalator());
+//          Log.e("DB", "onResponse downEscalator: " + service.getSectorArrayList().get(i).getDownEscalator());
+//          Log.e("DB", "onResponse upStair: " + service.getSectorArrayList().get(i).getUpStair());
+//          Log.e("DB", "onResponse downStair: " + service.getSectorArrayList().get(i).getDownStair());
+//          Log.e("DB", "onResponse pillar: " + service.getSectorArrayList().get(i).getPillar());
+//          Log.e("DB", "onResponse Board: " + service.getSectorArrayList().get(i).getBoard());
+//          Log.e("DB", "onResponse upBoard: " + service.getSectorArrayList().get(i).getUpBoard());
+//          Log.e("DB", "onResponse subwayTracks: " + service.getSectorArrayList().get(i).getSubwayTracks());
+//          Log.e("DB", "onResponse inSign: " + service.getSectorArrayList().get(i).getInSign());
+//          Log.e("DB", "onResponse outSign: " + service.getSectorArrayList().get(i).getOutSign());
+//          Log.e("DB", "onResponse Gate: " + service.getSectorArrayList().get(i).getGate());
+//          Log.e("DB", "onResponse GPS: " + service.getSectorArrayList().get(i).getGPS() + "\n");
+//          Log.e("DB", "onResponse 이웃섹터 idx: " + service.getSectorArrayList().get(i).getAdjacentIdx() + "\n");
+//          Log.e("DB", "onResponse 이웃섹터 direction: " + service.getSectorArrayList().get(i).getAdjacentDir() + "\n");
+//        }
 
         if(myCallback != null) myCallback.callback();
       } //onResponse
@@ -1204,7 +1208,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         }
       });
 
-      //debugSangsuMapdata();
+//      debugSangsuMapdata();
 
       return true;
     }
@@ -1213,8 +1217,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 
   public void debugSangsuMapdata(){
-    service.setDest_Station("합정");
-    service.setSource_Station("상수");
+    service.setDest_Station("상수");
+    service.setSource_Station("합정");
     service.setSource_Exit("2");
     service.setDest_Exit("3");
     getMapData_To_Service_From_Server("sangsu", new MyCallback() {
