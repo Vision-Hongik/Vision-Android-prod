@@ -16,6 +16,7 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     private int maxSize = 10;
     private float bitmapHeight;
     private float bitmapWidth;
+    private long [] lastAnnounceTime;
 
     private int acumCount;
     public InstanceTimeBuffer(){
@@ -23,6 +24,7 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
         this.bitmapHeight = 0;
         this.bitmapWidth = 0;
         this.acumCount = 0;
+        this.lastAnnounceTime = new long[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
 
 
@@ -90,8 +92,17 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
         return true;
     }
 
-    public ArrayList<Classifier.Recognition> getAnnouncealbeInstance(){
+    public ArrayList<Classifier.Recognition> getAnnouncealbeInstance(long curSystemClock){
+
         ArrayList<Classifier.Recognition> announceableList = new ArrayList<>();
+        //list의 last에서 현재 발견된 친구들 겟겟.. dot과 line의 경우는 timeStamp 0 이 3개 이상일때 && 3초 이상 차이날 떄만 안내!
+        // 나머지는 3초이상만 조건걸어서 timestamp 0 짜리 발견시 바로 ㄱ ㄱ ?
+        for(int i=0; i < 14; i++){
+            if( (curSystemClock - this.lastAnnounceTime[i]) > 3000 ){
+
+            }
+        }
+
         return announceableList;
     }
 
