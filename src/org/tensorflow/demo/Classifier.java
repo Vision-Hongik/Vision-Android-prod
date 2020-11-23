@@ -17,6 +17,9 @@ package org.tensorflow.demo;
 
 import android.graphics.Bitmap;
 import android.graphics.RectF;
+
+import org.tensorflow.demo.vision_module.Voice;
+
 import java.util.List;
 
 /**
@@ -165,6 +168,11 @@ public interface Classifier {
       int rowIdx = (int) (this.location.centerX() / (this.bitmapWidth / rowDim));
       int colIdx = (int) (this.location.centerY() / (this.bitmapHeight / colDim));
       return new MatIdx(rowIdx,colIdx,rowDim,colDim);
+    }
+
+    public void Announce(Voice voice){
+      voice.TTS("전방에 " + this.title + "이 있습니다.");
+      this.announced = true;
     }
 
   }

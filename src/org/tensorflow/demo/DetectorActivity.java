@@ -1167,21 +1167,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //      });
 
       //서비스를 위한 초기화 작업 시작
-      initService(initCompletedStatus, new MyCallback() {
-        @Override
-        public void callback() {
-          Log.e("n", "Navigate 시작" );
-          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
-          service.setReadyFlag(true);
-        }
+//      initService(initCompletedStatus, new MyCallback() {
+//        @Override
+//        public void callback() {
+//          Log.e("n", "Navigate 시작" );
+//          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
+//          service.setReadyFlag(true);
+//        }
+//
+//        @Override
+//        public void callbackBundle(Bundle result) {
+//
+//        }
+//      });
 
-        @Override
-        public void callbackBundle(Bundle result) {
-
-        }
-      });
-
-//      debugSangsuMapdata();
+      debugSangsuMapdata();
 
       return true;
     }
