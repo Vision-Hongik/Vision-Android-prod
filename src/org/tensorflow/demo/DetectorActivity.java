@@ -976,8 +976,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   public void announceInstance(){
-    // 버퍼
-
+    ArrayList<Classifier.Recognition> annouceAbleInstance = instanceTimeBuffer.getAnnouncealbeInstance(SystemClock.uptimeMillis());
+    for( Classifier.Recognition instance : annouceAbleInstance)
+     while(true) {
+       if(!voice.isSpeaking()) {
+         instance.Announce(voice);
+         break;
+       }
+     }
     // ...
   }
 
@@ -1024,7 +1030,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // 각 스텝은 몇초마다 실행될지도 정해야할듯?
     // 전부 3초마다 매번 실행되면 앱이 너무 시끄러울듯!
 
-    // announceInstance();
+    announceInstance();
     // OCR send();
 
     // dot block이 있다면 섹터 여부 확인

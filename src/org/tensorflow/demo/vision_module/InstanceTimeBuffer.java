@@ -97,6 +97,7 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
 
         ArrayList<Classifier.Recognition> announceableList = new ArrayList<>();
 
+        boolean blockFlag = false;
         for(int i=0; i < 14; i++){
             if( (curSystemClock - this.lastAnnounceTime[i]) > 3000 || this.lastAnnounceTime[i] == 0 ){
                 if(this.getLast().containsKey(i)) {
@@ -105,13 +106,14 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
                     boolean announcedFlag = true;
 
                     //dot & line block일 경우 timeStamp 0 이 3개 이상일때 && 3초 이상 차이날 떄만 안내!
-                    if(i == 0 || i == 1){
+                    if((i == 0 || i == 1) && !blockFlag){
                         for(Classifier.Recognition instance : instanceArray)
                             if(instance.getTimeStamp() == 0) timestamp0cnt++;
 
-                         if(timestamp0cnt >=3){
+                         if(timestamp0cnt >=2){
                             this.lastAnnounceTime[i] = curSystemClock;
                             announceableList.add(instanceArray.get(0));
+                            blockFlag = true;
                          }
                     }
                     // 나머직 인스턴스들은 timstamp가 0인 객체가 존재하거나, Announce가 아직 되지 않은 객체가 있다면 담는다.

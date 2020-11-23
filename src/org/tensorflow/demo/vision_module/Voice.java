@@ -80,6 +80,10 @@ public class Voice {
 
     }
 
+    public boolean isSpeaking(){
+        return tts.isSpeaking();
+    }
+
     public void setRecognitionListener(RecognitionListener listener){
         this.mRecognizer.setRecognitionListener(listener);
     }
