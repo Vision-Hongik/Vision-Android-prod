@@ -135,7 +135,7 @@ public class Service {
         } catch (IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
-
+// 2 5 7 8 9 10
         this.setCurrent_Sector(1); // 현재 Sector를 시작 출구 다음 Sector로 지정 ex) 5번 Sector
     }
 

@@ -173,7 +173,7 @@ public interface Classifier {
     public void Announce(Voice voice){
       switch (this.idx){
         case 0:
-        case 1: voice.TTS("유도 블럭을 잘 따라가는 중입니다.");
+        case 1: voice.TTS("경로를 잘 따라가는 중입니다.");
                 break;
 
         case 2: if(this.count >= 3 )

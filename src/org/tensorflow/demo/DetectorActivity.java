@@ -979,7 +979,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     return 0;
   }
 
-  final public static String[] WAY = {"앞", "우측앞", "우", "우측뒤", "뒤", "좌측뒤", "좌", "좌측앞"};
+  final public static String[] WAY = {"우측", "우측", "우측", "우측", "뒤", "좌측", "좌측", "좌측"};
 
   public void navigate() throws JSONException {
 
@@ -1000,7 +1000,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       if(service.getCur_Idx() == 8){
         voice.TTS("좌측 전방에 개찰구가 있습니다.");
       }
-      else if(service.getCur_Idx() == 8){
+      else if(service.getCur_Idx() == 9){
         voice.TTS("우측으로 블럭따라 유턴하세요.");
       }
       else{
