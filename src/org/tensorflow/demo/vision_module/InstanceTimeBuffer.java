@@ -96,10 +96,11 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
     public ArrayList<Classifier.Recognition> getAnnouncealbeInstance(long curSystemClock){
 
         ArrayList<Classifier.Recognition> announceableList = new ArrayList<>();
+        if(this.isEmpty()) return announceableList;
 
         boolean blockFlag = false;
         for(int i=0; i < 14; i++){
-            if( (curSystemClock - this.lastAnnounceTime[i]) > 3000 || this.lastAnnounceTime[i] == 0 ){
+            if( (curSystemClock - this.lastAnnounceTime[i]) > 4000 || this.lastAnnounceTime[i] == 0 ){
                 if(this.getLast().containsKey(i)) {
                     ArrayList<Classifier.Recognition> instanceArray =  this.getLast().get(i);
                     int timestamp0cnt = 0;
@@ -111,18 +112,27 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
                             if(instance.getTimeStamp() == 0) timestamp0cnt++;
 
                          if(timestamp0cnt >=2){
-                            this.lastAnnounceTime[i] = curSystemClock;
+                            this.lastAnnounceTime[0] = curSystemClock;
+                             this.lastAnnounceTime[1] = curSystemClock;
                             announceableList.add(instanceArray.get(0));
                             blockFlag = true;
                          }
                     }
+                    else if(i ==  2){
+                        if(instanceArray.size() > 1 ){
+                            instanceArray.get(0).setCount(instanceArray.size());
+                            announceableList.add(instanceArray.get(0));
+                        }
+                    }
                     // 나머직 인스턴스들은 timstamp가 0인 객체가 존재하거나, Announce가 아직 되지 않은 객체가 있다면 담는다.
                     else{
+                        boolean timestampTrueFlag = false;
                         for(Classifier.Recognition instance : instanceArray) {
                             if (instance.getTimeStamp() == 0) timestamp0cnt++;
                             if (!instance.isAnnounced()) announcedFlag = false;
+                            if(instance.getTimeStamp() > 0) timestampTrueFlag = true;
                         }
-                        if(timestamp0cnt >= 1 || !announcedFlag){
+                        if(timestampTrueFlag || !announcedFlag){
                             this.lastAnnounceTime[i] = curSystemClock;
                             announceableList.add(instanceArray.get(0));
                         }

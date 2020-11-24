@@ -976,7 +976,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   public void announceInstance(){
-    ArrayList<Classifier.Recognition> annouceAbleInstance = instanceTimeBuffer.getAnnouncealbeInstance(SystemClock.uptimeMillis());
+    ArrayList<Classifier.Recognition> annouceAbleInstance = instanceTimeBuffer.getAnnouncealbeInstance(SystemClock.currentThreadTimeMillis());
     for( Classifier.Recognition instance : annouceAbleInstance)
      while(true) {
        if(!voice.isSpeaking()) {

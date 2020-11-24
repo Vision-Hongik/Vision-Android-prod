@@ -171,7 +171,27 @@ public interface Classifier {
     }
 
     public void Announce(Voice voice){
-      voice.TTS("전방에 " + this.title + "이 있습니다.");
+      switch (this.idx){
+        case 0:
+        case 1: voice.TTS("전방에 " + this.title + " 있습니다.");
+                break;
+
+        case 2: if(this.count >= 3 )
+                  voice.TTS("전방에 사람이 혼잡합니다.");
+                break;
+
+        case 3:
+          break;
+
+        case 4:
+          voice.TTS("내려가는 계단이 계속 진행 중입니다.");
+          break;
+
+        case 5:
+          break;
+        case 6:
+          break;
+      }
       this.announced = true;
     }
 
