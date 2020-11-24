@@ -83,13 +83,13 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
             return false;
         }
 
-        Log.e("InstanceTimeBuffer", "checkSameInstance Differ: accumCount"+this.acumCount);
-        Log.e("InstanceTimeBuffer", "checkSameInstance Differ: 실제 가로" + rowDistance +", 기준 가로"+ (this.bitmapWidth/4));
-        Log.e("InstanceTimeBuffer", "checkSameInstance Differ: 실제 세로" + colDistance +", 기준 세로"+ (this.bitmapHeight/4));
+       // Log.e("InstanceTimeBuffer", "checkSameInstance Differ: accumCount"+this.acumCount);
+       // Log.e("InstanceTimeBuffer", "checkSameInstance Differ: 실제 가로" + rowDistance +", 기준 가로"+ (this.bitmapWidth/4));
+       // Log.e("InstanceTimeBuffer", "checkSameInstance Differ: 실제 세로" + colDistance +", 기준 세로"+ (this.bitmapHeight/4));
         if(rowDistance > this.bitmapWidth/4) return false;
         if(colDistance > this.bitmapHeight/4) return false;
 
-        Log.e("InstanceTimeBuffer", "checkSameInstance: True!!" + " "+ins2.getTitle() + " "+ins2.getTimeStamp());
+        //Log.e("InstanceTimeBuffer", "checkSameInstance: True!!" + " "+ins2.getTitle() + " "+ins2.getTimeStamp());
         return true;
     }
 
@@ -100,18 +100,20 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
 
         boolean blockFlag = false;
         for(int i=0; i < 14; i++){
-            if( (curSystemClock - this.lastAnnounceTime[i]) > 4000 || this.lastAnnounceTime[i] == 0 ){
+            Log.e("instanceTimeBuffer", "getAnnouncealbeInstance: " + i + "번: " + (curSystemClock - this.lastAnnounceTime[i]) );
+            if( (curSystemClock - this.lastAnnounceTime[i]) > 3000 || this.lastAnnounceTime[i] == 0 ){
                 if(this.getLast().containsKey(i)) {
                     ArrayList<Classifier.Recognition> instanceArray =  this.getLast().get(i);
                     int timestamp0cnt = 0;
                     boolean announcedFlag = true;
+                    boolean timestampTrueFlag = false;
 
                     //dot & line block일 경우 timeStamp 0 이 3개 이상일때 && 3초 이상 차이날 떄만 안내!
                     if((i == 0 || i == 1) && !blockFlag){
                         for(Classifier.Recognition instance : instanceArray)
-                            if(instance.getTimeStamp() == 0) timestamp0cnt++;
+                            if(instance.getTimeStamp() >= 1) {timestampTrueFlag = true; break;}
 
-                         if(timestamp0cnt >=2){
+                         if(timestampTrueFlag){
                             this.lastAnnounceTime[0] = curSystemClock;
                              this.lastAnnounceTime[1] = curSystemClock;
                             announceableList.add(instanceArray.get(0));
@@ -126,11 +128,10 @@ public class InstanceTimeBuffer extends LinkedList<InstanceHashTable> {
                     }
                     // 나머직 인스턴스들은 timstamp가 0인 객체가 존재하거나, Announce가 아직 되지 않은 객체가 있다면 담는다.
                     else{
-                        boolean timestampTrueFlag = false;
                         for(Classifier.Recognition instance : instanceArray) {
                             if (instance.getTimeStamp() == 0) timestamp0cnt++;
                             if (!instance.isAnnounced()) announcedFlag = false;
-                            if(instance.getTimeStamp() > 0) timestampTrueFlag = true;
+                            if(instance.getTimeStamp() > 0) {timestampTrueFlag = true; break;}
                         }
                         if(timestampTrueFlag || !announcedFlag){
                             this.lastAnnounceTime[i] = curSystemClock;
