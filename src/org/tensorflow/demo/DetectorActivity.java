@@ -268,7 +268,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                 final Vector<String> lines = new Vector<String>();
 
-
                 lines.add("");
                 lines.add("Instance Buffer");
                 lines.add("");
@@ -294,18 +293,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 lines.add("");
 
                 if(!DetectorActivity.this.instanceTimeBuffer.isEmpty()) {
-
                   InstanceHashTable lastInstanceBuffer = instanceTimeBuffer.getLast();
                   Iterator iterKey = lastInstanceBuffer.keySet().iterator();
                   while (iterKey.hasNext()) {
                     int nKey = (int) iterKey.next();
-                    ArrayList<Classifier.Recognition> recognitionArrayList =  lastInstanceBuffer.get(nKey);
-                    for(int i = 0; i < recognitionArrayList.size(); i++) {
+                    ArrayList<Classifier.Recognition> recognitionArrayList = lastInstanceBuffer.get(nKey);
+                    for (int i = 0; i < recognitionArrayList.size(); i++) {
                       Classifier.Recognition recog = recognitionArrayList.get(i);
-                      lines.add(recog.getTitle() + " No."+i + " ("+ recog.getMatIdx(N,N).rowIdx + ","+recog.getMatIdx(N,N).colIdx+")");
+                      lines.add(recog.getTitle() + " No." + i + " (" + recog.getMatIdx(N, N).rowIdx + "," + recog.getMatIdx(N, N).colIdx + ")");
                     }
                   }
-
+                }
 //                if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
 //                  lines.add(service.getSource_Station() + " Receive Map Data!");
 //                  lines.add("");
@@ -341,6 +339,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 lines.add("Dst Station: " + service.getDest_Station());
                 lines.add("Dst Exit: " + service.getDest_Exit());
                 lines.add("");
+
                 if(DetectorActivity.this.service.getSectorArrayList().size() > 0) {
                   String tmp = "Path";
                   for (Sector sec : service.getPath()) {
@@ -981,7 +980,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     ArrayList<RecognitionListener> ListenerArray = new ArrayList<RecognitionListener>(Arrays.asList(sourceStationVoiceListener, sourceExitVoiceListener,
             destStationVoiceListener,destExitVoiceListener, confirmVoiceListener));
 
-
     // init 시작
     try{
       voice.setRecognitionListener(ListenerArray.get(status));
@@ -1035,6 +1033,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         // 가까운 Sector와 Path에서 nextSector의 번호 비교
         if(DetectorActivity.this.service.setCurrentSectorToNext()) return 2;
         // 매칭만 된 경우
+        service.setCur_Idx(idx);
         return 1;
       }
     }
@@ -1075,6 +1074,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     // 매칭 된 경우 방향 정하기
     if(DetectorActivity.this.service.getMatchingFlag() == 1){
+      if(service.getCur_Idx() == 8){
+        voice.TTS("좌측 전방에 개찰구가 있습니다.");
+      }
+      else if(service.getCur_Idx() == 8){
+        voice.TTS("우측으로 블럭따라 유턴하세요.");
+      }
+      else{
       // index 는 0~7, N 방향부터 시계방향으로
       int index = DetectorActivity.this.sotwFormatter.whereUserGo(DetectorActivity.this.service.getAzimuth(), DetectorActivity.this.service.getWay());
       Log.e("wayIndex", "wayIndex: " + index + ", " + WAY[index]);
@@ -1082,7 +1088,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //      DetectorActivity.this.service.setNextWay(WAY[index] + "으로 가세요. ");
       DetectorActivity.this.service.setNextWay("matching 되었습니다!" + WAY[index] + "으로 가세요. ");
       voice.TTS("" + WAY[index] + "으로 가세요.");
+      }
     }
+
 
     // 목적지 도착 서비스 종료 TTS 구현
     else if(service.getMatchingFlag() == 2){
@@ -1162,8 +1170,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     OcrRequest ocrRequest = new OcrRequest(bitmap,ocrListener);
     this.requestQueue.add(ocrRequest);
   }
-
-
 
   private Compass.CompassListener getCompassListener() {
     return new Compass.CompassListener() {

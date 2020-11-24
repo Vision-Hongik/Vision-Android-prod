@@ -28,6 +28,7 @@ public class Service {
     private int userSectorNum;
     public int score;
     public int idx;
+    private int cur_Idx;
     // 사용자가 현재 찾아갈 섹터
     private Sector current_Sector;
     //private jsonObject Array
@@ -392,6 +393,14 @@ public class Service {
 
     public void setUserSectorNum(int userSectorNum) {
         this.userSectorNum = userSectorNum;
+    }
+
+    public int getCur_Idx() {
+        return cur_Idx;
+    }
+
+    public void setCur_Idx(int cur_Idx) {
+        this.cur_Idx = cur_Idx;
     }
 }
 
