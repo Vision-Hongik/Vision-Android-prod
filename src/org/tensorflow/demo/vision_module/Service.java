@@ -13,7 +13,6 @@ import java.util.Queue;
 import java.util.Stack;
 
 public class Service {
-
     private double longitude;
     private double latitude;
     private String source_Station;
@@ -27,7 +26,8 @@ public class Service {
     private boolean readyFlag;
     private int matchingFlag;
     private int userSectorNum;
-
+    public int score;
+    public int idx;
     // 사용자가 현재 찾아갈 섹터
     private Sector current_Sector;
     //private jsonObject Array
@@ -336,6 +336,54 @@ public class Service {
         if(sec1.getSign() == sec2.getSign()) num++;
         if(sec1.getGate() == sec2.getGate()) num++;
         return num;
+    }
+    private int Score = 0;
+
+    public void plusScore(int n){
+        this.Score += n;
+    }
+    public void minusScore(int n){
+        this.Score -= n;
+    }
+
+    // 두 섹터의 13개 인스턴스 일치율 반환
+    public int compareInstance(Sector sec1, Sector sec2){
+        this.Score = 0;
+        Log.e("instance", this.Score + "");
+        if(sec1.getUpEscalator() && sec2.getUpEscalator()) plusScore(4);
+        else if(sec1.getUpEscalator() != sec2.getUpEscalator()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getDownEscalator() && sec2.getDownEscalator()) plusScore(4);
+        else if(sec1.getDownEscalator() != sec2.getDownEscalator()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getUpStair() && sec2.getUpStair()) plusScore(4);
+        else if(sec1.getUpStair() != sec2.getUpStair()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getDownStair() && sec2.getDownStair()) plusScore(4);
+        else if(sec1.getDownStair() != sec2.getDownStair()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getPillar() && sec2.getPillar()) plusScore(4);
+        else if(sec1.getPillar() != sec2.getPillar()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getBoard() && sec2.getBoard()) plusScore(3);
+        else if(sec1.getBoard() != sec2.getBoard()) minusScore(3);
+        Log.e("instance", this.Score + "");
+        if(sec1.getUpBoard() && sec2.getUpBoard()) plusScore(2);
+        else if(sec1.getUpBoard() != sec2.getUpBoard()) minusScore(2);
+        Log.e("instance", this.Score + "");
+        if(sec1.getInSign() && sec2.getInSign()) plusScore(4);
+        else if(sec1.getInSign() != sec2.getInSign()) minusScore(7);
+        Log.e("instance", this.Score + "");
+        if(sec1.getOutSign() && sec2.getOutSign()) plusScore(3);
+        else if(sec1.getOutSign() != sec2.getOutSign()) minusScore(3);
+        Log.e("instance", this.Score + "");
+        if(sec1.getSign() && sec2.getSign()) plusScore(1);
+        else if(sec1.getSign() != sec2.getSign()) minusScore(1);
+        Log.e("instance", this.Score + "");
+        if(sec1.getGate() && sec2.getGate()) plusScore(4);
+        else if(sec1.getGate() != sec2.getGate()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        return Score;
     }
 
     public int getUserSectorNum() {
