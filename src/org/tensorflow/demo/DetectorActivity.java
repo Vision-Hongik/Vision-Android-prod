@@ -285,28 +285,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
    }
                   }
                 }
-//                if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
-//                  lines.add(service.getSource_Station() + " Receive Map Data!");
-//                  lines.add("");
-//                  for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
-//                    lines.add("Sector" + i);
-//                    lines.add(" Name: " + service.getSectorArrayList().get(i).getName());
-//                    lines.add(" GPS: " + service.getSectorArrayList().get(i).getGPS());
-//                    lines.add("");
-//                  }
-//                  lines.add("");
-//                  lines.add("upEscalator: " + curSector.getUpEscalator());
-//                  lines.add("downEscalator: " + curSector.getDownEscalator());
-//                  lines.add("upStair: " + curSector.getUpStair());
-//                  lines.add("downStair: " + curSector.getDownStair());
-//                  lines.add("pillar: " + curSector.getPillar());
-//                  lines.add("board: " + curSector.getBoard());
-//                  lines.add("upBoard: " + curSector.getUpBoard());
-//                  lines.add("inSign: " + curSector.getInSign());
-//                  lines.add("outSign: " + curSector.getOutSign());
-//                  lines.add("sign: " + curSector.getSign());
-//                  lines.add("gate: " + curSector.getGate());
-//                }
 
                 lines.add("");
                 lines.add("Compass: " + sotwFormatter.format(service.getAzimuth()));
@@ -670,41 +648,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     if (targetStation.contains("수") || targetStation.contains("상")) targetStation = "상수";
     else if (targetStation.contains("정") || targetStation.contains("합")) targetStation = "합정";
     Log.e("한번 가공후", "step done...");
-
-    /*아래는.. 당장은 안쓸 메소드 (ex. 부산->busan으로 바꾸는)*/
-//    for (int i = 0; i < stt_Station.length(); i++) {
-//
-//      //  한글자씩 읽음
-//      char chars = (char) (stt_Station.charAt(i) - 0xAC00);
-//      if (chars >= 0 && chars <= 11172) {
-//        /* A. 자음과 모음이 합쳐진 글자인경우 */
-//
-//        /* A-1. 초/중/종성 분리 */
-//        int chosung = chars / (21 * 28);
-//        int jungsung = chars % (21 * 28) / 28;
-//        int jongsung = chars % (21 * 28) % 28;
-//
-//        /* 알파벳으로 */
-//        resultEng = resultEng + arrChoSungEng[chosung] + arrJungSungEng[jungsung];
-//        if (jongsung != 0x0000) {
-//          /* A-3. 종성이 존재할경우 result에 담는다 */
-//          resultEng =  resultEng + arrJongSungEng[jongsung];
-//        }
-//
-//      } else {
-//        /* B. 한글이 아니거나 자음만 있을경우 */
-//        // 알파벳으로
-//        if( chars>=34127 && chars<=34147) {
-//          /* 단일모음인 경우 */
-//          int moum = (chars - 34127);
-//          resultEng = resultEng + arrJungSungEng[moum];
-//        } else {
-//          /* 알파벳인 경우 */
-//          resultEng = resultEng + ((char)(chars + 0xAC00));
-//        }
-//      }//if
-//    }
-//    Log.e("result_in_eng:", resultEng);
 
     Log.e("최종결과는?", targetStation);
     return targetStation;
@@ -1109,30 +1052,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
           e.printStackTrace();
         }
 
-        //log 확인.
-//        Log.e("h", "Number of Sector : " + DetectorActivity.this.service.getSectorArrayList().size());
-//        for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++) {
-//          Log.e("DB", "onResponse Name: " +service.getSectorArrayList().get(i).getName());
-//          Log.e("DB", "onResponse ID: " + service.getSectorArrayList().get(i).getId());
-//          Log.e("DB", "onResponse type: " + service.getSectorArrayList().get(i).getType());
-//          Log.e("DB", "onResponse index: " + service.getSectorArrayList().get(i).getIndex());
-//          Log.e("DB", "onResponse dot: " + service.getSectorArrayList().get(i).getDot());
-//          Log.e("DB", "onResponse Line: " + service.getSectorArrayList().get(i).getLine());
-//          Log.e("DB", "onResponse upEscalator: " + service.getSectorArrayList().get(i).getUpEscalator());
-//          Log.e("DB", "onResponse downEscalator: " + service.getSectorArrayList().get(i).getDownEscalator());
-//          Log.e("DB", "onResponse upStair: " + service.getSectorArrayList().get(i).getUpStair());
-//          Log.e("DB", "onResponse downStair: " + service.getSectorArrayList().get(i).getDownStair());
-//          Log.e("DB", "onResponse pillar: " + service.getSectorArrayList().get(i).getPillar());
-//          Log.e("DB", "onResponse Board: " + service.getSectorArrayList().get(i).getBoard());
-//          Log.e("DB", "onResponse upBoard: " + service.getSectorArrayList().get(i).getUpBoard());
-//          Log.e("DB", "onResponse subwayTracks: " + service.getSectorArrayList().get(i).getSubwayTracks());
-//          Log.e("DB", "onResponse inSign: " + service.getSectorArrayList().get(i).getInSign());
-//          Log.e("DB", "onResponse outSign: " + service.getSectorArrayList().get(i).getOutSign());
-//          Log.e("DB", "onResponse Gate: " + service.getSectorArrayList().get(i).getGate());
-//          Log.e("DB", "onResponse GPS: " + service.getSectorArrayList().get(i).getGPS() + "\n");
-//          Log.e("DB", "onResponse 이웃섹터 idx: " + service.getSectorArrayList().get(i).getAdjacentIdx() + "\n");
-//          Log.e("DB", "onResponse 이웃섹터 direction: " + service.getSectorArrayList().get(i).getAdjacentDir() + "\n");
-//        }
 
         if(myCallback != null) myCallback.callback();
       } //onResponse
@@ -1197,23 +1116,23 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //      });
 
 
-      //서비스를 위한 초기화 작업 시작
+    //  서비스를 위한 초기화 작업 시작
 
-//      initService(initCompletedStatus, new MyCallback() {
-//        @Override
-//        public void callback() {
-//          Log.e("n", "Navigate 시작" );
-//          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
-//          service.setReadyFlag(true);
-//        }
-//
-//        @Override
-//        public void callbackBundle(Bundle result) {
-//
-//        }
-//      });
+      initService(initCompletedStatus, new MyCallback() {
+        @Override
+        public void callback() {
+          Log.e("n", "Navigate 시작" );
+          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
+          service.setReadyFlag(true);
+        }
 
-      debugSangsuMapdata();
+        @Override
+        public void callbackBundle(Bundle result) {
+
+        }
+      });
+
+      //debugSangsuMapdata();
 
       return true;
     }
