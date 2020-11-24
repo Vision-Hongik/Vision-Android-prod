@@ -124,7 +124,7 @@ public class Sector {
     public void setDownStair(Boolean downStair) {this.downStair = downStair; }
     public void setPillar(Boolean pillar){   this.pillar = pillar;    }
     public void setBoard(Boolean board) {this.board = board;}
-    public void setUpBoard(Boolean UpBoard) {this.upBoard = upBoard;}
+    public void setUpBoard(Boolean upBoard) {this.upBoard = upBoard;}
     public void setSubwayTracks(Boolean subwayTracks) {this.subwayTracks=subwayTracks;}
     public void setInSign(Boolean inSign) {this.inSign = inSign;}
     public void setOutSign(Boolean outSign) {this.outSign = outSign;}
@@ -220,4 +220,23 @@ public class Sector {
         this.gate = init;
     }
 
+    @Override
+    public String toString() {
+        String resultString = "";
+        resultString += "upEscalator: " + upEscalator + "\n";
+        resultString += "downEscalator: " + downEscalator + "\n";
+        resultString += "upStair: " + upStair + "\n";
+        resultString += "downStair: " + downStair + "\n";
+        resultString += "pillar: " + pillar + "\n";
+        resultString += "board: " + board + "\n";
+        resultString += "upBoard: " + upBoard + "\n";
+        resultString += "inSign: " + inSign + "\n";
+        resultString += "outSign: " + outSign + "\n";
+        resultString += "sign: " + sign + "\n";
+        resultString += "gate: " + gate + "\n";
+
+        return resultString;
+    }
 }
+
+

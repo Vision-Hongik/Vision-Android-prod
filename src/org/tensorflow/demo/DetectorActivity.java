@@ -268,16 +268,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
                 final Vector<String> lines = new Vector<String>();
 
-                if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
-                  lines.add(service.getSource_Station() + " Receive Map Data!");
-                  lines.add("");
-                  for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
-                    lines.add("Sector" + i);
-                    lines.add(" Name: " + service.getSectorArrayList().get(i).getName());
-                    lines.add(" GPS: " + service.getSectorArrayList().get(i).getGPS());
-                    lines.add("");
-                  }
-                }
 
                 lines.add("");
                 lines.add("Instance Buffer");
@@ -298,6 +288,29 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     if(flag_buffer)
                       lines.add(tmp);
                   }
+                }
+
+                if(DetectorActivity.this.service.getSectorArrayList().size() > 0){
+//                  lines.add(service.getSource_Station() + " Receive Map Data!");
+//                  lines.add("");
+//                  for(int i = 0; i < DetectorActivity.this.service.getSectorArrayList().size(); i++){
+//                    lines.add("Sector" + i);
+//                    lines.add(" Name: " + service.getSectorArrayList().get(i).getName());
+//                    lines.add(" GPS: " + service.getSectorArrayList().get(i).getGPS());
+//                    lines.add("");
+//                  }
+                  lines.add("");
+                  lines.add("upEscalator: " + curSector.getUpEscalator());
+                  lines.add("downEscalator: " + curSector.getDownEscalator());
+                  lines.add("upStair: " + curSector.getUpStair());
+                  lines.add("downStair: " + curSector.getDownStair());
+                  lines.add("pillar: " + curSector.getPillar());
+                  lines.add("board: " + curSector.getBoard());
+                  lines.add("upBoard: " + curSector.getUpBoard());
+                  lines.add("inSign: " + curSector.getInSign());
+                  lines.add("outSign: " + curSector.getOutSign());
+                  lines.add("sign: " + curSector.getSign());
+                  lines.add("gate: " + curSector.getGate());
                 }
 
                 lines.add("");
@@ -1080,7 +1093,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     // 목적지 도착 서비스 종료 TTS 구현
     else if(service.getMatchingFlag() == 2){
       voice.TTS("좌측 합정방향입니다.");
-      DetectorActivity.this.service.setNextWay("길찾기 서비스가 종료되었습니다.");
+      DetectorActivity.this.service.setNextWay("탑승장입니다.");
     }
     else{
       DetectorActivity.this.service.setNextWay("길찾기 중...");
@@ -1200,21 +1213,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //      });
 
 //      //서비스를 위한 초기화 작업 시작
-      initService(initCompletedStatus, new MyCallback() {
-        @Override
-        public void callback() {
-          Log.e("n", "Navigate 시작" );
-          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
-          service.setReadyFlag(true);
-        }
+//      initService(initCompletedStatus, new MyCallback() {
+//        @Override
+//        public void callback() {
+//          Log.e("n", "Navigate 시작" );
+//          voice.TTS(service.getSource_Station() + "에서 " + service.getDest_Station() + "까지 경로 안내를 시작합니다.");
+//          service.setReadyFlag(true);
+//        }
+//
+//        @Override
+//        public void callbackBundle(Bundle result) {
+//
+//        }
+//      });
 
-        @Override
-        public void callbackBundle(Bundle result) {
-
-        }
-      });
-
-//      debugSangsuMapdata();
+      debugSangsuMapdata();
 
       return true;
     }

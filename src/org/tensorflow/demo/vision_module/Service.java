@@ -241,52 +241,53 @@ public class Service {
         if(sec1.getGate() == sec2.getGate()) num++;
         return num;
     }
+    private int Score = 0;
 
-    public void tt(int n){
-        this.num += n;
+    public void plusScore(int n){
+        this.Score += n;
     }
-    public void tf(int n){
-        this.num -= n;
+    public void minusScore(int n){
+        this.Score -= n;
     }
-    private int num = 0;
+
     // 두 섹터의 13개 인스턴스 일치율 반환
     public int compareInstance(Sector sec1, Sector sec2){
-        this.num = 0;
-        Log.e("instance", this.num + "");
-        if(sec1.getUpEscalator() && sec2.getUpEscalator()) tt(4);
-        else if(sec1.getUpEscalator() != sec2.getUpEscalator()) tf(4);
-        Log.e("instance", this.num + "");
-        if(sec1.getDownEscalator() && sec2.getDownEscalator()) tt(4);
-        else if(sec1.getDownEscalator() != sec2.getDownEscalator()) tf(4);
-        Log.e("instance", this.num + "");
-        if(sec1.getUpStair() && sec2.getUpStair()) tt(4);
-        else if(sec1.getUpStair() != sec2.getUpStair()) tf(4);
-        Log.e("instance", this.num + "");
-        if(sec1.getDownStair() && sec2.getDownStair()) tt(4);
-        else if(sec1.getDownStair() != sec2.getDownStair()) tf(4);
-        Log.e("instance", this.num + "");
-        if(sec1.getPillar() && sec2.getPillar()) tt(3);
-        else if(sec1.getPillar() != sec2.getPillar()) tf(3);
-        Log.e("instance", this.num + "");
-        if(sec1.getBoard() && sec2.getBoard()) tt(3);
-        else if(sec1.getBoard() != sec2.getBoard()) tf(3);
-        Log.e("instance", this.num + "");
-        if(sec1.getUpBoard() && sec2.getUpBoard()) tt(2);
-        else if(sec1.getUpBoard() != sec2.getUpBoard()) tf(2);
-        Log.e("instance", this.num + "");
-        if(sec1.getInSign() && sec2.getInSign()) tt(4);
-        else if(sec1.getInSign() != sec2.getInSign()) tf(8);
-        Log.e("instance", this.num + "");
-        if(sec1.getOutSign() && sec2.getOutSign()) tt(3);
-        else if(sec1.getOutSign() != sec2.getOutSign()) tf(3);
-        Log.e("instance", this.num + "");
-        if(sec1.getSign() && sec2.getSign()) tt(1);
-        else if(sec1.getSign() != sec2.getSign()) tf(1);
-        Log.e("instance", this.num + "");
-        if(sec1.getGate() && sec2.getGate()) tt(4);
-        else if(sec1.getGate() != sec2.getGate()) tf(4);
-        Log.e("instance", this.num + "");
-        return num;
+        this.Score = 0;
+        Log.e("instance", this.Score + "");
+        if(sec1.getUpEscalator() && sec2.getUpEscalator()) plusScore(4);
+        else if(sec1.getUpEscalator() != sec2.getUpEscalator()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getDownEscalator() && sec2.getDownEscalator()) plusScore(4);
+        else if(sec1.getDownEscalator() != sec2.getDownEscalator()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getUpStair() && sec2.getUpStair()) plusScore(4);
+        else if(sec1.getUpStair() != sec2.getUpStair()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getDownStair() && sec2.getDownStair()) plusScore(4);
+        else if(sec1.getDownStair() != sec2.getDownStair()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getPillar() && sec2.getPillar()) plusScore(4);
+        else if(sec1.getPillar() != sec2.getPillar()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        if(sec1.getBoard() && sec2.getBoard()) plusScore(3);
+        else if(sec1.getBoard() != sec2.getBoard()) minusScore(3);
+        Log.e("instance", this.Score + "");
+        if(sec1.getUpBoard() && sec2.getUpBoard()) plusScore(2);
+        else if(sec1.getUpBoard() != sec2.getUpBoard()) minusScore(2);
+        Log.e("instance", this.Score + "");
+        if(sec1.getInSign() && sec2.getInSign()) plusScore(4);
+        else if(sec1.getInSign() != sec2.getInSign()) minusScore(7);
+        Log.e("instance", this.Score + "");
+        if(sec1.getOutSign() && sec2.getOutSign()) plusScore(3);
+        else if(sec1.getOutSign() != sec2.getOutSign()) minusScore(3);
+        Log.e("instance", this.Score + "");
+        if(sec1.getSign() && sec2.getSign()) plusScore(1);
+        else if(sec1.getSign() != sec2.getSign()) minusScore(1);
+        Log.e("instance", this.Score + "");
+        if(sec1.getGate() && sec2.getGate()) plusScore(4);
+        else if(sec1.getGate() != sec2.getGate()) minusScore(4);
+        Log.e("instance", this.Score + "");
+        return Score;
     }
 
     public int getUserSectorNum() {
