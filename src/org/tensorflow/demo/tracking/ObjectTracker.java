@@ -22,6 +22,8 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -500,6 +502,7 @@ public class ObjectTracker {
       isDead = false;
 
       id = Integer.toString(this.hashCode());
+
 
       lastExternalPositionTime = timestamp;
 

@@ -121,7 +121,7 @@ public class DetectorActivity extends CameraActivity  implements OnImageAvailabl
   private static final DetectorMode MODE = DetectorMode.YOLO;
 
   // Minimum detection confidence to track a detection.
-  public static final float MINIMUM_CONFIDENCE_YOLO = 0.4f;
+  public static final float MINIMUM_CONFIDENCE_YOLO = 0.7f;
 
   private static final boolean MAINTAIN_ASPECT = MODE == DetectorMode.YOLO;
 
