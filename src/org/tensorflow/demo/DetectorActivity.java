@@ -16,6 +16,7 @@
 
 package org.tensorflow.demo;
 
+import androidx.fragment.app.Fragment;
 import android.annotation.TargetApi;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -43,10 +44,14 @@ import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentPagerAdapter;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -93,7 +98,9 @@ import java.util.Vector;
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
  * objects.
  */
-public class DetectorActivity extends CameraActivity implements OnImageAvailableListener {
+public class DetectorActivity extends CameraActivity  implements OnImageAvailableListener {
+
+
   private static final Logger LOGGER = new Logger();
 
   // Configuration values for tiny-yolo-voc. Note that the graph is not included with TensorFlow and
@@ -172,6 +179,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+
     // 5 * 5 분면의 InstanceBuffer 초기화
     instanceMatrix.initMat(5,5);
 
@@ -207,6 +215,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     service = new Service();
 
   }
+
+
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
