@@ -227,7 +227,8 @@ public class TensorFlowYoloDetector implements Classifier {
           if (confidenceInClass > DetectorActivity.MINIMUM_CONFIDENCE_YOLO) {
             LOGGER.i(
                 "%s (%d) %f %s", LABELS[detectedClass], detectedClass, confidenceInClass, rect);
-            Log.i("주세환이 뽑은=","내가 뽑은 데이터"+LABELS[detectedClass]);
+            Log.i("한글 클래스","내가 뽑은 데이터 ==> "+LABELS[detectedClass]);
+            //confidenceInClass 는 인식률
             pq.add(new Recognition("" + offset, detectedClass, LABELS[detectedClass], confidenceInClass, rect,bitmap.getWidth(),bitmap.getHeight()));
 
           }

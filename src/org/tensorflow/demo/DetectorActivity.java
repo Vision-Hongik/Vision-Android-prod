@@ -121,7 +121,7 @@ public class DetectorActivity extends CameraActivity  implements OnImageAvailabl
   private static final DetectorMode MODE = DetectorMode.YOLO;
 
   // Minimum detection confidence to track a detection.
-  public static final float MINIMUM_CONFIDENCE_YOLO = 0.7f;
+  public static final float MINIMUM_CONFIDENCE_YOLO = 0.5f;
 
   private static final boolean MAINTAIN_ASPECT = MODE == DetectorMode.YOLO;
 
@@ -242,9 +242,9 @@ public class DetectorActivity extends CameraActivity  implements OnImageAvailabl
     previewHeight = size.getHeight();
 
     sensorOrientation = rotation - getScreenOrientation();
-    LOGGER.i("Camera orientation relative to screen canvas: %d", sensorOrientation);
-
-    LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
+//    LOGGER.i("Camera orientation relative to screen canvas: %d", sensorOrientation);
+//
+//    LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
     rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
     croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Config.ARGB_8888);
 
@@ -349,7 +349,7 @@ public class DetectorActivity extends CameraActivity  implements OnImageAvailabl
       return;
     }
     computingDetection = true;
-    LOGGER.i("Preparing image " + currTimestamp + " for detection in bg thread.");
+//    LOGGER.i("Preparing image " + currTimestamp + " for detection in bg thread.");
 
     rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
 
