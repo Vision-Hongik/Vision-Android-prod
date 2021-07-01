@@ -18,6 +18,7 @@ package org.tensorflow.demo;
 
 import androidx.fragment.app.Fragment;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -47,6 +48,9 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -175,9 +179,29 @@ public class DetectorActivity extends CameraActivity  implements OnImageAvailabl
   public InstanceMatrix instanceMatrix = new InstanceMatrix();
   public InstanceTimeBuffer instanceTimeBuffer = new InstanceTimeBuffer();
 
+
+  TensorFlowYoloDetector tensorFlowYoloDetector =new TensorFlowYoloDetector();
+
+
+
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+
+//
+    ImageButton detectedClass = findViewById(R.id.cameraclick);
+    detectedClass.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+//      Log.i("bt", "버튼누름");
+      Toast.makeText(getApplicationContext(),tensorFlowYoloDetector.hangul_class,Toast.LENGTH_SHORT).show();
+
+        LOGGER.i( "%s  %s","버튼눌러서 나온 값 : ",tensorFlowYoloDetector.hangul_class);
+      }
+    });
+
+
 
 
     // 5 * 5 분면의 InstanceBuffer 초기화

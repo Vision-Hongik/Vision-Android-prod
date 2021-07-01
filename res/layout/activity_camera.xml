@@ -51,6 +51,7 @@
                 android:orientation="vertical">
 
                 <ImageButton
+
                     android:visibility="invisible"
                     android:id="@+id/leftarrow"
                     android:onClick="onButtonClicked1"
@@ -86,6 +87,7 @@
                 android:orientation="vertical">
 
                 <ImageButton
+
                     android:visibility="invisible"
                     android:id="@+id/rightarrow"
                     android:background="@android:color/transparent"

@@ -15,11 +15,13 @@ limitations under the License.
 
 package org.tensorflow.demo;
 
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Trace;
 import android.util.Log;
+import android.view.View;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 import org.tensorflow.demo.env.Logger;
@@ -31,7 +33,9 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 /** An object detector that uses TF and a YOLO model to detect objects. */
-public class TensorFlowYoloDetector implements Classifier {
+public class TensorFlowYoloDetector  implements Classifier  {
+
+//  Intent intent = new Intent(TensorFlowYoloDetector.this, DetectorActivity.class);
   private static final Logger LOGGER = new Logger();
 
   // Only return this many results with at least this confidence.
@@ -67,6 +71,8 @@ public class TensorFlowYoloDetector implements Classifier {
     "sign",
     "gate"
   };
+  public static String  hangul_class;
+
 
   // Config values.
   private String inputName;
@@ -106,7 +112,9 @@ public class TensorFlowYoloDetector implements Classifier {
     return d;
   }
 
-  private TensorFlowYoloDetector() {}
+  TensorFlowYoloDetector() {
+
+  }
 
   private float expit(final float x) {
     return (float) (1. / (1. + Math.exp(-x)));
@@ -223,6 +231,8 @@ public class TensorFlowYoloDetector implements Classifier {
             }
           }
 
+
+
           final float confidenceInClass = maxClass * confidence;
           if (confidenceInClass > DetectorActivity.MINIMUM_CONFIDENCE_YOLO) {
             LOGGER.i(
@@ -230,9 +240,17 @@ public class TensorFlowYoloDetector implements Classifier {
             Log.i("한글 클래스","내가 뽑은 데이터 ==> "+LABELS[detectedClass]);
             //confidenceInClass 는 인식률
             pq.add(new Recognition("" + offset, detectedClass, LABELS[detectedClass], confidenceInClass, rect,bitmap.getWidth(),bitmap.getHeight()));
+            hangul_class = LABELS[detectedClass];
+//            Log.d("한글1","한글1 ="+hangul_class);
 
-          }
+               }
+//          Log.d("한글2","한글2 ="+hangul_class);
+
         }
+
+
+
+
       }
     }
     timer.endSplit("decoded results");
