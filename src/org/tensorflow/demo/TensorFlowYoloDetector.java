@@ -41,7 +41,7 @@ public class TensorFlowYoloDetector  implements Classifier  {
   // Only return this many results with at least this confidence.
   private static final int MAX_RESULTS = 10;
 
-  public static final int NUM_CLASSES = 1; // 기존 14개
+  public static final int NUM_CLASSES = 14;
 
   private static final int NUM_BOXES_PER_BLOCK = 5;
 
@@ -54,7 +54,9 @@ public class TensorFlowYoloDetector  implements Classifier  {
     9.42, 5.11,
     16.62, 10.52
   };
-/* "dot",
+
+  public static final String[] LABELS = {
+    "dot",
     "line",
     "person",
     "upescalator",
@@ -67,10 +69,7 @@ public class TensorFlowYoloDetector  implements Classifier  {
     "insign",
     "outsign",
     "sign",
-    "gate" 기존 라벨들
- */
-  public static final String[] LABELS = {
-         "turtle"
+    "gate"
   };
   public static String  hangul_class;
 
@@ -149,7 +148,7 @@ public class TensorFlowYoloDetector  implements Classifier  {
     bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
 
     for (int i = 0; i < intValues.length; ++i) {
-      floatValues[i * 3 ] = ((intValues[i] >> 16) & 0xFF) / 255.0f;
+      floatValues[i * 3 + 0] = ((intValues[i] >> 16) & 0xFF) / 255.0f;
       floatValues[i * 3 + 1] = ((intValues[i] >> 8) & 0xFF) / 255.0f;
       floatValues[i * 3 + 2] = (intValues[i] & 0xFF) / 255.0f;
     }
@@ -200,10 +199,10 @@ public class TensorFlowYoloDetector  implements Classifier  {
                   + (NUM_BOXES_PER_BLOCK * (NUM_CLASSES + 5)) * x
                   + (NUM_CLASSES + 5) * b;
 
-          final float xPos = (x + expit(output[offset])) * blockSize;
+          final float xPos = (x + expit(output[offset + 0])) * blockSize;
           final float yPos = (y + expit(output[offset + 1])) * blockSize;
 
-          final float w = (float) (Math.exp(output[offset + 2]) * ANCHORS[2 * b]) * blockSize;
+          final float w = (float) (Math.exp(output[offset + 2]) * ANCHORS[2 * b + 0]) * blockSize;
           final float h = (float) (Math.exp(output[offset + 3]) * ANCHORS[2 * b + 1]) * blockSize;
 
           final RectF rect =
