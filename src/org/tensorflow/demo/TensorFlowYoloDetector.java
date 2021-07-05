@@ -41,7 +41,7 @@ public class TensorFlowYoloDetector  implements Classifier  {
   // Only return this many results with at least this confidence.
   private static final int MAX_RESULTS = 10;
 
-  public static final int NUM_CLASSES = 14;
+  public static final int NUM_CLASSES = 1;//14
 
   private static final int NUM_BOXES_PER_BLOCK = 5;
 
@@ -54,22 +54,22 @@ public class TensorFlowYoloDetector  implements Classifier  {
     9.42, 5.11,
     16.62, 10.52
   };
-
+   /* "dot",
+            "line",
+            "person",
+            "upescalator",
+            "downescalator",
+            "upstair",
+            "downstair",
+            "pillar",
+            "board",
+            "upboard",
+            "insign",
+            "outsign",
+            "sign",
+            "gate" 전 팀 라벨들*/
   public static final String[] LABELS = {
-    "dot",
-    "line",
-    "person",
-    "upescalator",
-    "downescalator",
-    "upstair",
-    "downstair",
-    "pillar",
-    "board",
-    "upboard",
-    "insign",
-    "outsign",
-    "sign",
-    "gate"
+          "turtle"
   };
   public static String  hangul_class;
 
