@@ -1169,7 +1169,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
   }
 
-  //  GPS 켜는 dialog 뛰우기
+  //  GPS 켜는 dialog 띄우기
   protected void turn_on_GPS_dialog()
   {
     LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
